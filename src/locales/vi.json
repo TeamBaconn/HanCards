@@ -1,0 +1,88 @@
+{
+  "header": {
+    "title": "HanCards"
+  },
+  "nav": {
+    "study": "Học",
+    "manage": "Từ vựng",
+    "about": "Giới thiệu"
+  },
+  "study": {
+    "toKorean": "Sang tiếng Hàn",
+    "fromKorean": "Từ tiếng Hàn",
+    "toKoreanTitle": "Hiển thị bản dịch sang tiếng Hàn",
+    "fromKoreanTitle": "Hiển thị bản dịch từ tiếng Hàn",
+    "prompt": "Gợi ý",
+    "answer": "Đáp án",
+    "noPacks": "Không có bộ từ vựng nào đang hoạt động. Hãy vào",
+    "noPacksManage": "Từ vựng",
+    "noPacksEnd": "và bật một số bộ từ vựng!",
+    "flip": "lật",
+    "next": "tiếp",
+    "showAnswer": "Xem đáp án",
+    "nextBtn": "Tiếp →",
+    "words": "từ",
+    "pack": "bộ",
+    "packs": "bộ",
+    "seen": "Đã xem",
+    "card": "từ vựng"
+  },
+  "manage": {
+    "categories": "Danh mục",
+    "packs": "Bộ từ vựng",
+    "activePacks": "Bộ từ vựng đang dùng",
+    "words": "Từ vựng",
+    "activeWords": "Từ đang dùng",
+    "newPackPlaceholder": "Tên bộ từ vựng mới…",
+    "addPack": "+ Thêm bộ từ vựng",
+    "addPackError": "Vui lòng nhập tên bộ từ vựng!",
+    "csvImport": "📥 Nhập CSV",
+    "deleteAll": "🗑 Xóa tất cả",
+    "deleteAllConfirm": "Xóa TẤT CẢ bộ từ vựng?",
+    "noPacks": "Chưa có bộ từ vựng nào. Thêm ở trên hoặc dùng Nhập CSV.",
+    "word": "từ",
+    "wordPlural": "từ",
+    "packSingular": "bộ",
+    "packPlural": "bộ",
+    "toggleCategory": "Bật/tắt tất cả bộ từ vựng trong {{cat}}",
+    "deleteCategoryConfirm": "Xóa tất cả bộ từ vựng trong \"{{cat}}\"?"
+  },
+  "editPack": {
+    "renamePack": "Đổi tên bộ từ vựng",
+    "save": "Lưu",
+    "wordsLabel": "{{count}} Từ",
+    "noWords": "Chưa có từ nào. Thêm ở bên dưới.",
+    "editWord": "Sửa từ",
+    "addWord": "Thêm từ",
+    "koreanPlaceholder": "Tiếng Hàn",
+    "translationPlaceholder": "Bản dịch",
+    "addBtn": "+ Thêm",
+    "updated": "✓ Đã cập nhật.",
+    "added": "✓ Đã thêm."
+  },
+  "csvImport": {
+    "title": "Nhập CSV",
+    "packName": "pack_name",
+    "translation": "translation",
+    "importBtn": "Nhập",
+    "cancelBtn": "Hủy",
+    "llmPrompt": "🤖 Tạo prompt LLM",
+    "noRows": "Không tìm thấy dòng hợp lệ nào.",
+    "importResult": "✓ {{details}} — {{total}} từ.",
+    "created": "{{count}} đã tạo",
+    "updated": "{{count}} đã cập nhật"
+  },
+  "llmPrompt": {
+    "title": "🤖 Tạo prompt cho LLM",
+    "placeholder": "Dán tài liệu học của bạn vào đây. Nhấn Tạo & Sao chép — một prompt sẵn sàng sẽ được sao chép vào clipboard. Sau đó dán vào ChatGPT, Claude, hoặc bất kỳ LLM nào để nhận CSV bạn có thể nhập.",
+    "generateCopy": "Tạo & Sao chép",
+    "copied": "✓ Đã sao chép!",
+    "close": "Đóng",
+    "copiedMsg": "✓ Prompt đã được sao chép! Dán vào LLM của bạn, sau đó mang CSV đầu ra về đây để nhập."
+  },
+  "about": {
+    "description": "HanCards là ứng dụng flashcard đơn giản, hoạt động offline để học từ vựng tiếng Hàn. Bạn có thể tự thêm bộ từ vựng mới bằng CSV theo mẫu hoặc học trên bộ có sẵn. Web được tạo bởi",
+    "copyright": "© {{year}} Team Bacon. All rights reserved."
+  },
+  "loading": "Đang tải…"
+}

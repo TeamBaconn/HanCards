@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 const STORAGE_KEY = "HANCARDS";
 
-const CSV_HINT = `pack_category,pack_name,korean,english
-TC3,TC3 - Bài 1,학기,semester
-TC3,TC3 - Bài 1,과목,subject
-TC3,TC3 - Bài 2,대인 관계,social relations
-(wrap comma-containing values in "double quotes")`;
+const CSV_HINT = `Example:
+
+pack_category,pack_name,korean,translation
+TC3 🇻🇳,B1,학기,semester
+TC3 🇻🇳,B1,과목,subject`;
 
 const SCROLLBAR_CSS = `
   .ps::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -18,7 +19,55 @@ const SCROLLBAR_CSS = `
 async function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : { packs: [], counts: {} };
+    const local = raw ? JSON.parse(raw) : { packs: [], counts: {} };
+    // Merge pre-built packs from all CSVs listed in public/packs/index.json
+    try {
+      const base = import.meta.env.BASE_URL || "/";
+      const indexRes = await fetch(`${base}packs/index.json`);
+      if (indexRes.ok) {
+        const csvFiles = await indexRes.json();
+        let changed = false;
+        for (const csvFile of csvFiles) {
+          try {
+            const res = await fetch(`${base}packs/${csvFile}`);
+            if (!res.ok) continue;
+            const csvText = await res.text();
+            const rows = parseCSV(csvText);
+            // Group rows into packs (same logic as CSV import)
+            const grouped = {};
+            rows.forEach(({ pack_category, pack_name, korean, english }) => {
+              if (!pack_name || !korean || !english) return;
+              const key = (pack_category || "") + "|||" + pack_name;
+              if (!grouped[key]) grouped[key] = { category: pack_category || "Uncategorized", name: pack_name, words: [] };
+              grouped[key].words.push({ korean, english });
+            });
+            for (const dp of Object.values(grouped)) {
+              const exists = local.packs.some(
+                p => p.name === dp.name && (p.category || p.pack_category || "Uncategorized") === dp.category
+              );
+              if (!exists) {
+                local.packs.push({
+                  id: `pack-default-${dp.category}-${dp.name}`.replace(/\s+/g, "_"),
+                  name: dp.name,
+                  category: dp.category,
+                  words: dp.words,
+                  enabled: true,
+                });
+                changed = true;
+              }
+            }
+          } catch (e) {
+            console.warn(`Could not load pack ${csvFile}`, e);
+          }
+        }
+        if (changed) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(local));
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load default packs", e);
+    }
+    return local;
   } catch {
     return { packs: [], counts: {} };
   }
@@ -97,19 +146,28 @@ const TrashIcon = () => (
 );
 
 function FlipCard({ front, back, flipped, onClick, dark }) {
-  const HALF = 220;
+  // Animation duration halved (faster)
+  const HALF = 110;
+  const { t: tr } = useTranslation();
   const [text, setText] = useState(front || "");
-  const [label, setLabel] = useState("Prompt");
+  const [label, setLabel] = useState("prompt");
+  const labelText = label === "answer" ? tr("study.answer") : tr("study.prompt");
   const [phase, setPhase] = useState("idle");
   const timerRef = useRef(null);
   const prevFlipped = useRef(flipped);
   const prevFront = useRef(front);
 
+  // Only the answer (back) side is green; use the same green as the button (t.activeBg)
+  // t.activeBg: D ? "#0c1f0c" : "#f0faf0"
+  const cardColors = dark
+    ? { front: "#161616", back: "#0c1f0c", border: "#1a3a1a", shadow: "0 6px 32px rgba(10,40,10,0.85)" }
+    : { front: "#fff", back: "#f0faf0", border: "#a8daa8", shadow: "0 6px 32px rgba(80,160,80,0.18)" };
+
   useEffect(() => {
     if (prevFront.current !== front) {
       prevFront.current = front;
       clearTimeout(timerRef.current);
-      setPhase("idle"); setText(front || ""); setLabel("Prompt");
+      setPhase("idle"); setText(front || ""); setLabel("prompt");
     }
   }, [front]);
 
@@ -118,27 +176,35 @@ function FlipCard({ front, back, flipped, onClick, dark }) {
     prevFlipped.current = flipped;
     clearTimeout(timerRef.current);
     setPhase("out");
+    // Change text at halfway point, not immediately
     timerRef.current = setTimeout(() => {
       setText(flipped ? (back || "") : (front || ""));
-      setLabel(flipped ? "Answer" : "Prompt");
+      setLabel(flipped ? "answer" : "prompt");
       setPhase("in");
       timerRef.current = setTimeout(() => setPhase("idle"), HALF);
     }, HALF);
     return () => clearTimeout(timerRef.current);
   }, [flipped, front, back]);
 
+  // Determine which side is showing for color
+  const isBack = flipped ? (phase !== "out") : (phase === "out");
+  const bgColor = isBack ? cardColors.back : cardColors.front;
+  const borderColor = isBack ? cardColors.border : (dark ? "#252525" : "#e0e0e0");
+  const boxShadow = isBack ? cardColors.shadow : (dark ? "0 6px 32px rgba(0,0,0,0.45)" : "0 6px 32px rgba(0,0,0,0.10)");
+
   return (
     <div onClick={onClick} style={{
       cursor: "pointer", width: "100%", maxWidth: 680, margin: "0 auto", height: 340,
-      userSelect: "none", background: dark ? "#1e1e1e" : "#fff", borderRadius: 28,
-      boxShadow: dark ? "0 4px 16px rgba(0,0,0,0.4)" : "0 4px 16px rgba(0,0,0,0.07)",
+      userSelect: "none", background: bgColor, borderRadius: 28,
+      border: `3px solid ${borderColor}`,
+      boxShadow: boxShadow,
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "2.5rem 3.5rem", boxSizing: "border-box",
-      transition: `transform ${HALF}ms cubic-bezier(.4,0,.2,1)`,
+      transition: `background 0.2s, border 0.2s, box-shadow 0.2s, transform ${HALF}ms cubic-bezier(.4,0,.2,1)`,
       transform: `scaleX(${phase === "out" ? 0 : 1})`,
     }}>
-      <div style={{ fontSize: "0.85rem", letterSpacing: 3, color: dark ? "#888" : "#bbb", marginBottom: 20, textTransform: "uppercase", fontWeight: 500 }}>{label}</div>
-      <div style={{ fontSize: getFontSize(text), fontWeight: 700, color: dark ? "#f0f0f0" : "#1a1a1a", textAlign: "center", lineHeight: 1.2, wordBreak: "break-word", width: "100%" }}>{text}</div>
+      <div style={{ fontSize: "0.85rem", letterSpacing: 3, color: isBack ? (dark ? "#6dde6d" : "#2a7a2a") : (dark ? "#b6b6b6" : "#888"), marginBottom: 20, textTransform: "uppercase", fontWeight: 500 }}>{labelText}</div>
+      <div style={{ fontSize: getFontSize(text), fontWeight: 700, color: isBack ? (dark ? "#eaffea" : "#1a3a1a") : (dark ? "#eaeaea" : "#1a1a1a"), textAlign: "center", lineHeight: 1.2, wordBreak: "break-word", width: "100%" }}>{text}</div>
     </div>
   );
 }
@@ -159,6 +225,7 @@ function Modal({ title, onClose, children, dark, maxWidth = 520 }) {
 }
 
 export default function App() {
+  const { t: tr, i18n } = useTranslation();
   const [screen, setScreen] = useState("loading");
   const [packs, setPacks] = useState([]);
   const [counts, setCounts] = useState({});
@@ -258,7 +325,7 @@ export default function App() {
   };
 
   const deleteCategory = (cat) => {
-    if (!confirm(`Delete all packs in "${cat}"?`)) return;
+    if (!confirm(tr('manage.deleteCategoryConfirm', { cat }))) return;
     const np = packs.filter(p => (p.category || p.pack_category || "Uncategorized") !== cat);
     setPacks(np);
     const nc = {}; setCounts(nc); countsRef.current = nc;
@@ -269,7 +336,11 @@ export default function App() {
   };
 
   const addPack = () => {
-    const name = newPackName.trim(); if (!name) return;
+    const name = newPackName.trim();
+    if (!name) {
+      window.alert(tr('manage.addPackError'));
+      return;
+    }
     const np = [...packs, { id: `pack-${Date.now()}`, name, words: [], enabled: false }];
     setPacks(np); setNewPackName(""); persist(np, counts);
   };
@@ -288,7 +359,7 @@ export default function App() {
   };
 
   const deleteAllPacks = () => {
-    if (!confirm("Delete ALL packs?")) return;
+    if (!confirm(tr('manage.deleteAllConfirm'))) return;
     setPacks([]); setCounts({}); setCardIdx(null); persist([], {});
   };
 
@@ -305,7 +376,7 @@ export default function App() {
     });
     setPacks(np); persist(np, counts);
     setWordInput({ korean: "", english: "" }); setEditWordIdx(null);
-    setAddWordMsg(editWordIdx !== null ? "✓ Updated." : "✓ Added.");
+    setAddWordMsg(editWordIdx !== null ? tr('editPack.updated') : tr('editPack.added'));
     setTimeout(() => setAddWordMsg(""), 1500);
   };
 
@@ -317,7 +388,7 @@ export default function App() {
   const doImport = () => {
     if (!importText.trim()) return;
     const rows = parseCSV(importText);
-    if (!rows.length) { setImportMsg("No valid rows found."); return; }
+    if (!rows.length) { setImportMsg(tr('csvImport.noRows')); return; }
     const grouped = {};
     rows.forEach(({ pack_category, pack_name, korean, english }) => {
       if (!pack_name || !korean || !english) return;
@@ -338,7 +409,8 @@ export default function App() {
       total += words.length;
     });
     setPacks(np); persist(np, counts);
-    setImportMsg(`✓ ${added > 0 ? `${added} created` : ""}${added && updated ? ", " : ""}${updated > 0 ? `${updated} updated` : ""} — ${total} words.`);
+    const details = [added > 0 ? tr('csvImport.created', { count: added }) : "", updated > 0 ? tr('csvImport.updated', { count: updated }) : ""].filter(Boolean).join(", ");
+    setImportMsg(tr('csvImport.importResult', { details, total }));
     setImportText("");
   };
 
@@ -347,13 +419,18 @@ export default function App() {
     const prompt = `Convert the following Korean study material into a CSV with exactly 4 columns: pack_category, pack_name, korean, english.
 
 Rules:
-- First row must be exactly: pack_category,pack_name,korean,english
-- Use the lesson/topic title as pack_name (same value for all words in the same lesson)
+- First row must be exactly: pack_category,pack_name,korean,translation
+- Use the lesson/topic title as pack_name (same value for all words in the same lesson). Shorten the pack_name — keep the same language as the original title. Use shortcodes for common things that don't need to be fully spelled out (e.g. "Bài 1" instead of "Bài học số 1", "Ch2" instead of "Chapter 2", "L3" instead of "Lesson 3").
 - Use the course/book/overall group as pack_category (same value for all packs in the same group)
 - korean = the Korean word or phrase
-- english = the English or Vietnamese translation (keep it concise, under 80 chars)
+- translation = the English or Vietnamese translation (keep it concise, under 80 chars)
 - If a value contains a comma, wrap it in double quotes
 - Output ONLY the raw CSV. No explanation, no markdown fences, no extra text.
+
+Naming rules:
+- If pack_category or pack_name is long, shorten it to only the essential part (e.g. drop generic words like "Chapter", "Unit", "Lesson", "Bài", "과", "단원" unless they are the only identifier)
+- IMPORTANT: Keep the same language as the original title. If the title is in Vietnamese, keep it in Vietnamese. If it is in Korean, keep it in Korean. If it is in English, keep it in English. Do NOT translate or transliterate.
+- If a value contains a comma, wrap it in double quotes
 
 Material:
 ${promptInput.trim()}`;
@@ -412,7 +489,7 @@ ${promptInput.trim()}`;
 
   if (screen === "loading") return (
     <div style={{ fontFamily: "system-ui", background: t.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", width: "100vw" }}>
-      <p style={{ color: t.subText }}>Loading…</p>
+      <p style={{ color: t.subText }}>{tr('loading')}</p>
     </div>
   );
 
@@ -421,11 +498,14 @@ ${promptInput.trim()}`;
       {/* Header */}
       <div style={{ background: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, position: "sticky", top: 0, zIndex: 50 }}>
         <div style={{ display: "flex", alignItems: "stretch", height: 54 }}>
+          {/* Logo and Title */}
           <div style={{ padding: "0 1.8rem", display: "flex", alignItems: "center", fontWeight: 700, fontSize: "1rem", flex: 1 }}>
-            한국어 <span style={{ color: t.subText, fontWeight: 400, marginLeft: 6 }}>Flash Cards</span>
+            <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="App Icon" style={{ width: 32, height: 32, marginRight: 12, verticalAlign: "middle" }} />
+            한카드 <span style={{ color: t.subText, fontWeight: 400, marginLeft: 6 }}>HanCards</span>
           </div>
+          {/* Nav Tabs */}
           <div style={{ display: "flex" }}>
-            {[["study","Study"],["manage","Manage"]].map(([s, lbl]) => (
+            {[ ["study", tr('nav.study')],["manage", tr('nav.manage')]].map(([s, lbl]) => (
               <button key={s} onClick={() => setScreen(s)} style={{
                 ...btnBase, borderRadius: 0, padding: "0 1.6rem", fontSize: "0.9rem",
                 background: "transparent", color: screen === s ? t.text : t.subText,
@@ -433,20 +513,44 @@ ${promptInput.trim()}`;
                 fontWeight: screen === s ? 600 : 400,
               }}>{lbl}</button>
             ))}
+            {/* About Tab */}
+            <button onClick={() => setScreen("about")}
+              style={{
+                ...btnBase, borderRadius: 0, padding: "0 1.6rem", fontSize: "0.9rem",
+                background: "transparent", color: screen === "about" ? t.text : t.subText,
+                borderBottom: screen === "about" ? `2px solid ${t.primaryBg}` : "2px solid transparent",
+                fontWeight: screen === "about" ? 600 : 400,
+              }}>
+              {tr('nav.about')}
+            </button>
           </div>
         </div>
       </div>
+      {/* ── ABOUT ── */}
+      {screen === "about" && (
+        <div style={{ padding: "3rem 2rem", maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="App Icon" style={{ width: 300, height: 300 }} />
+          <h2 style={{ fontWeight: 800, fontSize: "2rem", marginBottom: 10 }}>HanCards</h2>
+          <p style={{ fontSize: "1.1rem", color: t.subText, marginBottom: 24 }}>
+            {tr('about.description')}
+            <a href="https://bacongamedev.com/posts/portfolio/" target="_blank" rel="noopener noreferrer" style={{ color: t.text, textDecoration: "underline", marginLeft: 4 }}>Bacon</a>
+          </p>
+          <div style={{ fontSize: "0.95rem", color: t.mutedText, marginTop: 30 }}>
+            {tr('about.copyright', { year: new Date().getFullYear() })}
+          </div>
+        </div>
+      )}
 
       {/* ── STUDY ── */}
       {screen === "study" && (
         <div style={{ padding: "3rem 2rem", margin: 0 }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "2.5rem" }}>
             <div style={{ display: "flex", background: t.toggleBg, borderRadius: 10, padding: 3 }}>
-              {[["eng", "🇺🇸", "🇰🇷"], ["kor", "🇰🇷", "🇺🇸"]].map(([v, f, t2]) => (
+              {[['eng', tr('study.toKorean')], ['kor', tr('study.fromKorean')]].map(([v, label]) => (
                 <button key={v} onClick={() => { setMode(v); setFlipped(false); }}
-                  title={v === "eng" ? "English → Korean" : "Korean → English"}
-                  style={{ ...btnBase, padding: "0.5rem 1.1rem", fontSize: "1.35rem", lineHeight: 1, display: "flex", alignItems: "center", gap: 4, background: mode === v ? t.toggleActive : "transparent", color: mode === v ? t.text : t.subText, boxShadow: mode === v ? "0 1px 4px rgba(0,0,0,0.25)" : "none" }}>
-                  {f}<span style={{ fontSize: "0.75rem", opacity: 0.4, margin: "0 1px" }}>/</span>{t2}
+                  title={v === 'eng' ? tr('study.toKoreanTitle') : tr('study.fromKoreanTitle')}
+                  style={{ ...btnBase, padding: "0.5rem 1.1rem", fontSize: "1.05rem", lineHeight: 1, display: "flex", alignItems: "center", gap: 4, background: mode === v ? t.toggleActive : "transparent", color: mode === v ? t.text : t.subText, boxShadow: mode === v ? "0 1px 4px rgba(0,0,0,0.25)" : "none" }}>
+                  {label}
                 </button>
               ))}
             </div>
@@ -454,24 +558,24 @@ ${promptInput.trim()}`;
           {allWords.length === 0 ? (
             <div style={{ textAlign: "center", color: t.subText, marginTop: "5rem" }}>
               <div style={{ fontSize: "2.5rem", marginBottom: 16 }}>📚</div>
-              <p>No active packs. Go to <strong style={{ color: t.text, cursor: "pointer" }} onClick={() => setScreen("manage")}>Manage</strong> and enable some!</p>
+              <p>{tr('study.noPacks')} <strong style={{ color: t.text, cursor: "pointer" }} onClick={() => setScreen("manage")}>{tr('study.noPacksManage')}</strong> {tr('study.noPacksEnd')}</p>
             </div>
           ) : card ? (
             <>
               <FlipCard front={front} back={back} flipped={flipped} onClick={() => setFlipped(f => !f)} dark={dark} />
               <div style={{ textAlign: "center", marginTop: 18, fontSize: "0.72rem", color: t.mutedText, display: "flex", justifyContent: "center", gap: 28 }}>
-                <span><kbd style={kbdStyle}>↑ ↓ Space</kbd> flip</span>
-                <span><kbd style={kbdStyle}>→ Enter</kbd> next</span>
+                <span><kbd style={kbdStyle}>↑ ↓ Space</kbd> {tr('study.flip')}</span>
+                <span><kbd style={kbdStyle}>→ Enter</kbd> {tr('study.next')}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: "2.2rem" }}>
                 {!flipped
-                  ? <button style={primaryBtn} onClick={() => setFlipped(true)}>Show Answer</button>
-                  : <button style={primaryBtn} onClick={nextCard}>Next →</button>}
+                  ? <button style={primaryBtn} onClick={() => setFlipped(true)}>{tr('study.showAnswer')}</button>
+                  : <button style={primaryBtn} onClick={nextCard}>{tr('study.nextBtn')}</button>}
               </div>
               <div style={{ display: "flex", justifyContent: "center", gap: 32, marginTop: "2rem", fontSize: "0.78rem", color: t.mutedText }}>
-                <span>{allWords.length} words · {enabledCount} pack{enabledCount !== 1 ? "s" : ""}</span>
-                <span>Seen {minSeen}–{maxSeen}×</span>
-                <span>Card #{(cardIdx ?? 0) + 1}</span>
+                <span>{allWords.length} {tr('study.words')} · {enabledCount} {enabledCount !== 1 ? tr('study.packs') : tr('study.pack')}</span>
+                <span>{tr('study.seen')} {minSeen}–{maxSeen}×</span>
+                <span>{tr('study.card')} #{(cardIdx ?? 0) + 1}</span>
               </div>
             </>
           ) : null}
@@ -484,11 +588,11 @@ ${promptInput.trim()}`;
           {/* Analytics */}
           <div style={{ display: "flex", gap: 14, marginBottom: "2rem", flexWrap: "wrap" }}>
             {[
-              ["Categories", `${Object.keys(packsByCategory).length}`],
-              ["Packs", `${packs.length}`],
-              ["Active Packs", `${enabledCount} / ${packs.length}`],
-              ["Words", `${packs.reduce((a, p) => a + p.words.length, 0)}`],
-              ["Active Words", `${allWords.length}`],
+              [tr('manage.categories'), `${Object.keys(packsByCategory).length}`],
+              [tr('manage.packs'), `${packs.length}`],
+              [tr('manage.activePacks'), `${enabledCount} / ${packs.length}`],
+              [tr('manage.words'), `${packs.reduce((a, p) => a + p.words.length, 0)}`],
+              [tr('manage.activeWords'), `${allWords.length}`],
             ].map(([lbl, val]) => (
               <div key={lbl} style={{ background: t.rowBg, borderRadius: 12, padding: "1rem 1.2rem", border: `1px solid ${t.border}`, flex: 1, textAlign: "center", minWidth: 90 }}>
                 <div style={{ fontSize: "1.5rem", fontWeight: 700, color: t.text, lineHeight: 1 }}>{val}</div>
@@ -501,15 +605,15 @@ ${promptInput.trim()}`;
           <div style={{ display: "flex", gap: 10, marginBottom: "2rem", flexWrap: "wrap", alignItems: "center" }}>
             <input value={newPackName} onChange={e => setNewPackName(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addPack()}
-              placeholder="New pack name…" style={{ ...inputStyle, flex: "1 1 180px", width: "auto" }} />
-            <button style={primaryBtn} onClick={addPack}>+ Add Pack</button>
-            <button style={ghostBtn} onClick={() => { setImportModal(true); setImportMsg(""); setImportText(""); }}>📥 CSV Import</button>
-            <button style={{ ...ghostBtn, color: "#ff5566", borderColor: D ? "#3a1515" : "#fdd" }} onClick={deleteAllPacks}>🗑 Delete All</button>
+              placeholder={tr('manage.newPackPlaceholder')} style={{ ...inputStyle, flex: "1 1 180px", width: "auto" }} />
+            <button style={primaryBtn} onClick={addPack}>{tr('manage.addPack')}</button>
+            <button style={ghostBtn} onClick={() => { setImportModal(true); setImportMsg(""); setImportText(""); }}>{tr('manage.csvImport')}</button>
+            <button style={{ ...ghostBtn, color: "#ff5566", borderColor: D ? "#3a1515" : "#fdd" }} onClick={deleteAllPacks}>{tr('manage.deleteAll')}</button>
           </div>
 
           {/* Pack grid grouped by category */}
           {packs.length === 0 ? (
-            <div style={{ textAlign: "center", color: t.subText, padding: "4rem 0" }}>No packs yet. Add one above or use CSV Import.</div>
+            <div style={{ textAlign: "center", color: t.subText, padding: "4rem 0" }}>{tr('manage.noPacks')}</div>
           ) : (
             <div className="ps" style={{ maxHeight: "calc(100vh - 340px)", overflowY: "auto", paddingRight: 4 }}>
               {Object.entries(packsByCategory).map(([cat, catPacks]) => (
@@ -534,11 +638,11 @@ ${promptInput.trim()}`;
                         outline: 'none',
                         position: 'static',
                       }}
-                      aria-label={`Toggle all packs in ${cat}`}
+                      aria-label={tr('manage.toggleCategory', { cat })}
                     >
                       <div style={{ position: "relative", top: 0, left: catPacks.every(p => p.enabled) ? 18 : 3, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
                     </button>
-                    <span style={{ fontSize: "0.72rem", color: t.subText, marginLeft: 2 }}>{catPacks.length} pack{catPacks.length !== 1 ? "s" : ""}</span>
+                    <span style={{ fontSize: "0.72rem", color: t.subText, marginLeft: 2 }}>{catPacks.length} {catPacks.length !== 1 ? tr('manage.packPlural') : tr('manage.packSingular')}</span>
                     <button
                       onClick={() => deleteCategory(cat)}
                       title={`Delete all packs in ${cat}`}
@@ -549,7 +653,7 @@ ${promptInput.trim()}`;
                     {catPacks.map(p => (
                       <div key={p.id} style={{ background: p.enabled ? t.activeBg : t.rowBg, border: `1px solid ${p.enabled ? t.activeBorder : t.border}`, borderRadius: 14, padding: "1.1rem", display: "flex", flexDirection: "column", gap: 10, transition: "background 0.2s, border-color 0.2s" }}>
                         <div style={{ fontWeight: 600, fontSize: "0.88rem", color: p.enabled ? t.activeText : t.text, lineHeight: 1.35, wordBreak: "break-word", flex: 1 }}>{p.name}</div>
-                        <div style={{ fontSize: "0.73rem", color: t.subText }}>{p.words.length} word{p.words.length !== 1 ? "s" : ""}</div>
+                        <div style={{ fontSize: "0.73rem", color: t.subText }}>{p.words.length} {p.words.length !== 1 ? tr('manage.wordPlural') : tr('manage.word')}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                           <div onClick={() => togglePack(p.id)} style={{ cursor: "pointer", width: 34, height: 20, borderRadius: 10, background: p.enabled ? "#4caf50" : t.border, position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
                             <div style={{ position: "absolute", top: 2, left: p.enabled ? 16 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
@@ -582,17 +686,17 @@ ${promptInput.trim()}`;
 
             {/* Rename */}
             <div style={{ padding: "1.4rem 1.8rem", borderBottom: `1px solid ${t.border}`, flexShrink: 0 }}>
-              <div style={sectionLabel}>Rename Pack</div>
+              <div style={sectionLabel}>{tr('editPack.renamePack')}</div>
               <div style={{ display: "flex", gap: 8 }}>
                 <input defaultValue={editPack.name} id="renameInput" style={{ ...inputStyle, flex: 1 }} />
-                <button style={primaryBtn} onClick={() => { const v = document.getElementById("renameInput").value.trim(); if (v) renamePack(editingPackId, v); }}>Save</button>
+                <button style={primaryBtn} onClick={() => { const v = document.getElementById("renameInput").value.trim(); if (v) renamePack(editingPackId, v); }}>{tr('editPack.save')}</button>
               </div>
             </div>
 
             {/* Word list */}
             <div className="ps" style={{ flex: 1, overflowY: "auto", padding: "1.4rem 1.8rem" }}>
-              <div style={sectionLabel}>{editPack.words.length} Words</div>
-              {editPack.words.length === 0 && <div style={{ color: t.mutedText, fontSize: "0.85rem", padding: "0.5rem 0" }}>No words yet. Add one below.</div>}
+              <div style={sectionLabel}>{tr('editPack.wordsLabel', { count: editPack.words.length })}</div>
+              {editPack.words.length === 0 && <div style={{ color: t.mutedText, fontSize: "0.85rem", padding: "0.5rem 0" }}>{tr('editPack.noWords')}</div>}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {editPack.words.map((w, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: editWordIdx === i ? (D ? "#1a2a1a" : "#f0faf0") : t.rowBg, borderRadius: 8, padding: "0.6rem 0.9rem", fontSize: "0.85rem", border: `1px solid ${editWordIdx === i ? t.activeBorder : t.border}` }}>
@@ -612,15 +716,15 @@ ${promptInput.trim()}`;
 
             {/* Add word — pinned bottom */}
             <div style={{ borderTop: `1px solid ${t.border}`, padding: "1.2rem 1.8rem", flexShrink: 0 }}>
-              <div style={sectionLabel}>{editWordIdx !== null ? "Edit Word" : "Add Word"}</div>
+              <div style={sectionLabel}>{editWordIdx !== null ? tr('editPack.editWord') : tr('editPack.addWord')}</div>
               <div style={{ display: "grid", gridTemplateColumns: editWordIdx !== null ? "1fr 1.4fr 1fr 0.5fr" : "1fr 1.4fr 1fr", gap: 8, alignItems: "center" }}>
                 <input value={wordInput.korean} onChange={e => setWordInput(w => ({ ...w, korean: e.target.value }))}
-                  placeholder="Korean" style={{ ...inputStyle, width: "100%" }} />
+                  placeholder={tr('editPack.koreanPlaceholder')} style={{ ...inputStyle, width: "100%" }} />
                 <input value={wordInput.english} onChange={e => setWordInput(w => ({ ...w, english: e.target.value }))}
                   onKeyDown={e => e.key === "Enter" && saveWord()}
-                  placeholder="Translation" style={{ ...inputStyle, width: "100%" }} />
+                  placeholder={tr('editPack.translationPlaceholder')} style={{ ...inputStyle, width: "100%" }} />
                 <button style={{ ...primaryBtn, whiteSpace: "nowrap", width: "100%" }} onClick={saveWord}>
-                  {editWordIdx !== null ? "Save" : "+ Add"}
+                  {editWordIdx !== null ? tr('editPack.save') : tr('editPack.addBtn')}
                 </button>
                 {editWordIdx !== null && (
                   <button style={{ ...iconBtn, color: t.subText, fontSize: "1.1rem", padding: "0.4rem", width: "100%" }}
@@ -635,17 +739,13 @@ ${promptInput.trim()}`;
 
       {/* ── CSV IMPORT MODAL ── */}
       {importModal && (
-        <Modal title="CSV Import" onClose={() => setImportModal(false)} dark={dark}>
-          <div style={{ background: t.toggleBg, borderRadius: 10, padding: "1rem 1.1rem", marginBottom: "1.4rem", fontSize: "0.78rem", color: t.subText, fontFamily: "monospace", whiteSpace: "pre", overflowX: "auto", lineHeight: 1.8 }}>{CSV_HINT}</div>
-          <p style={{ fontSize: "0.83rem", color: t.subText, marginBottom: "1.2rem", lineHeight: 1.6 }}>
-            Same <code style={{ background: t.toggleBg, padding: "1px 5px", borderRadius: 4 }}>pack_name</code> merges into existing pack. Duplicate Korean words are overwritten.
-          </p>
+        <Modal title={tr('csvImport.title')} onClose={() => setImportModal(false)} dark={dark}>
           <textarea value={importText} onChange={e => setImportText(e.target.value)}
-            placeholder="Paste CSV here…"
+            placeholder={CSV_HINT + "\n\n" + tr('csvImport.pastePlaceholder')}
             style={{ ...inputStyle, minHeight: 160, resize: "vertical", fontFamily: "monospace", fontSize: "0.82rem" }} />
           <div style={{ display: "flex", gap: 10, marginTop: "1rem", alignItems: "center" }}>
-            <button style={primaryBtn} onClick={doImport}>Import</button>
-            <button style={ghostBtn} onClick={() => setImportModal(false)}>Cancel</button>
+            <button style={primaryBtn} onClick={doImport}>{tr('csvImport.importBtn')}</button>
+            <button style={ghostBtn} onClick={() => setImportModal(false)}>{tr('csvImport.cancelBtn')}</button>
             <button style={{
               ...ghostBtn,
               marginLeft: "auto",
@@ -654,7 +754,7 @@ ${promptInput.trim()}`;
               border: 'none',
               boxShadow: '0 2px 8px rgba(215,38,96,0.12)'
             }} onClick={() => { setPromptModal(true); setPromptInput(""); setPromptCopied(false); }}>
-              🤖 LLM Prompt
+              {tr('csvImport.llmPrompt')}
             </button>
           </div>
           {importMsg && <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: importMsg.startsWith("✓") ? (D ? "#5ddb9e" : "#2e8a5e") : "#ff5566", marginBottom: 0 }}>{importMsg}</p>}
@@ -663,26 +763,38 @@ ${promptInput.trim()}`;
 
       {/* ── LLM PROMPT MODAL ── */}
       {promptModal && (
-        <Modal title="🤖 Generate LLM Prompt" onClose={() => setPromptModal(false)} dark={dark} maxWidth={560}>
+        <Modal title={tr('llmPrompt.title')} onClose={() => setPromptModal(false)} dark={dark} maxWidth={560}>
           <div style={{ marginBottom: 8 }}>
             <textarea value={promptInput} onChange={e => setPromptInput(e.target.value)}
-              placeholder="Paste your study material below. Click Generate & Copy — a ready-to-use prompt will be copied to your clipboard. Then paste it into ChatGPT, Claude, or any LLM to get a CSV you can import."
+              placeholder={tr('llmPrompt.placeholder')}
               style={{ ...inputStyle, minHeight: 220, resize: "vertical", lineHeight: 1.6 }} />
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: "1rem", alignItems: "center" }}>
             <button style={{ ...primaryBtn, opacity: promptInput.trim() ? 1 : 0.5 }}
               disabled={!promptInput.trim()} onClick={generatePrompt}>
-              {promptCopied ? "✓ Copied to clipboard!" : "Generate & Copy"}
+              {promptCopied ? tr('llmPrompt.copied') : tr('llmPrompt.generateCopy')}
             </button>
-            <button style={ghostBtn} onClick={() => setPromptModal(false)}>Close</button>
+            <button style={ghostBtn} onClick={() => setPromptModal(false)}>{tr('llmPrompt.close')}</button>
           </div>
           {promptCopied && (
             <p style={{ marginTop: "1rem", fontSize: "0.83rem", color: D ? "#5ddb9e" : "#2e8a5e", lineHeight: 1.6, marginBottom: 0 }}>
-              ✓ Prompt copied! Paste it into your LLM, then bring the CSV output back here to import.
+              {tr('llmPrompt.copiedMsg')}
             </p>
           )}
         </Modal>
       )}
+
+      {/* Floating language switcher */}
+      <button onClick={() => i18n.changeLanguage(i18n.language === 'vi' ? 'en' : 'vi')} style={{
+        position: "fixed", bottom: 24, right: 80, zIndex: 200,
+        height: 46, borderRadius: 23, paddingInline: 14,
+        background: D ? "#e8e8e8" : "#1a1a1a", color: D ? "#111" : "#fff",
+        border: "none", cursor: "pointer", fontSize: "0.82rem", fontWeight: 600,
+        boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+      }}>
+        {i18n.language === 'vi' ? '🇬🇧 EN' : '🇻🇳 VI'}
+      </button>
 
       {/* Floating dark mode */}
       <button onClick={() => setDark(d => !d)} style={{

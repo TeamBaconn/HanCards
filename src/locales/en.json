@@ -1,0 +1,90 @@
+{
+  "header": {
+    "title": "HanCards"
+  },
+  "nav": {
+    "study": "Study",
+    "manage": "Vocabulary",
+    "about": "About"
+  },
+  "study": {
+    "toKorean": "To Korean",
+    "fromKorean": "From Korean",
+    "toKoreanTitle": "Show translation to Korean",
+    "fromKoreanTitle": "Show translation from Korean",
+    "prompt": "Prompt",
+    "answer": "Answer",
+    "noPacks": "No active packs. Go to",
+    "noPacksManage": "Vocabulary",
+    "noPacksEnd": "and enable some!",
+    "flip": "flip",
+    "next": "next",
+    "showAnswer": "Show Answer",
+    "nextBtn": "Next →",
+    "words": "words",
+    "pack": "pack",
+    "packs": "packs",
+    "seen": "Seen",
+    "card": "Card"
+  },
+  "manage": {
+    "categories": "Categories",
+    "packs": "Packs",
+    "activePacks": "Active Packs",
+    "words": "Words",
+    "activeWords": "Active Words",
+    "newPackPlaceholder": "New pack name…",
+    "addPack": "+ Add Pack",
+    "addPackError": "Please enter a pack name!",
+    "csvImport": "📥 CSV Import",
+    "deleteAll": "🗑 Delete All",
+    "deleteAllConfirm": "Delete ALL packs?",
+    "noPacks": "No packs yet. Add one above or use CSV Import.",
+    "word": "word",
+    "wordPlural": "words",
+    "packSingular": "pack",
+    "packPlural": "packs",
+    "toggleCategory": "Toggle all packs in {{cat}}",
+    "deleteCategoryConfirm": "Delete all packs in \"{{cat}}\"?"
+  },
+  "editPack": {
+    "renamePack": "Rename Pack",
+    "save": "Save",
+    "wordsLabel": "{{count}} Words",
+    "noWords": "No words yet. Add one below.",
+    "editWord": "Edit Word",
+    "addWord": "Add Word",
+    "koreanPlaceholder": "Korean",
+    "translationPlaceholder": "Translation",
+    "addBtn": "+ Add",
+    "updated": "✓ Updated.",
+    "added": "✓ Added."
+  },
+  "csvImport": {
+    "title": "CSV Import",
+    "hint": null,
+    "packName": "pack_name",
+    "translation": "translation",
+    "pastePlaceholder": "",
+    "importBtn": "Import",
+    "cancelBtn": "Cancel",
+    "llmPrompt": "🤖 LLM Prompt",
+    "noRows": "No valid rows found.",
+    "importResult": "✓ {{details}} — {{total}} words.",
+    "created": "{{count}} created",
+    "updated": "{{count}} updated"
+  },
+  "llmPrompt": {
+    "title": "🤖 Generate LLM Prompt",
+    "placeholder": "Paste your study material below. Click Generate & Copy — a ready-to-use prompt will be copied to your clipboard. Then paste it into ChatGPT, Claude, or any LLM to get a CSV you can import.",
+    "generateCopy": "Generate & Copy",
+    "copied": "✓ Copied to clipboard!",
+    "close": "Close",
+    "copiedMsg": "✓ Prompt copied! Paste it into your LLM, then bring the CSV output back here to import."
+  },
+  "about": { 
+    "description": "HanCards is a simple flashcard app, working offline to help you learn Korean vocabulary. You can add your own new packs via CSV using the template, or study on the available packs. Web created by",
+    "copyright": "© {{year}} Team Bacon. All rights reserved."
+  },
+  "loading": "Loading…"
+}
