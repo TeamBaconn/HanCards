@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const STORAGE_KEY = "kcards-v15";
+const STORAGE_KEY = "HANCARDS";
 
 const CSV_HINT = `pack_category,pack_name,korean,english
 TC3,TC3 - Bài 1,학기,semester
@@ -50,12 +50,13 @@ function parseCSV(text) {
       else cur += ch;
     }
     fields.push(cur);
+    const clean = (s) => s.trim().replace(/^"|"$/g, "").trim();
     if (hasCategory) {
       if (fields.length < 4) return null;
-      return { pack_category: fields[0].trim(), pack_name: fields[1].trim(), korean: fields[2].trim(), english: fields[3].trim() };
+      return { pack_category: clean(fields[0]), pack_name: clean(fields[1]), korean: clean(fields[2]), english: clean(fields[3]) };
     } else {
       if (fields.length < 3) return null;
-      return { pack_category: "", pack_name: fields[0].trim(), korean: fields[1].trim(), english: fields[2].trim() };
+      return { pack_category: "", pack_name: clean(fields[0]), korean: clean(fields[1]), english: clean(fields[2]) };
     }
   }).filter(Boolean);
 }
@@ -354,12 +355,6 @@ Rules:
 - If a value contains a comma, wrap it in double quotes
 - Output ONLY the raw CSV. No explanation, no markdown fences, no extra text.
 
-Naming rules (very important):
-- Keep pack_category SHORT: max 20 characters. Use only the essential identifier (e.g. "TC3", "TOPIK1", "Book2"). Drop filler words like "Chapter", "Unit", "Lesson".
-- Keep pack_name SHORT: max 30 characters. Use only the core topic or lesson number (e.g. "Bài 1", "L3 Family", "Ch2 Food"). Drop long subtitles.
-- pack_category and pack_name must NOT contain any of these symbols: " ' , \ / | : ; ( ) [ ] { }
-- Use only plain alphanumeric characters, spaces, hyphens, and dots.
-
 Material:
 ${promptInput.trim()}`;
     navigator.clipboard.writeText(prompt);
@@ -518,7 +513,7 @@ ${promptInput.trim()}`;
           ) : (
             <div className="ps" style={{ maxHeight: "calc(100vh - 340px)", overflowY: "auto", paddingRight: 4 }}>
               {Object.entries(packsByCategory).map(([cat, catPacks]) => (
-                <div key={cat} style={{ marginBottom: 28 }}>
+                <div key={cat} style={{ marginBottom: 28, paddingBottom: 28, borderBottom: `1px solid ${t.border}` }}>
                   <div style={{ display: "flex", alignItems: "center", marginBottom: 8, gap: 12 }}>
                     <span style={{ fontWeight: 700, fontSize: "1.05rem", color: t.text }}>{cat}</span>
                     <button
