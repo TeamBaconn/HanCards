@@ -383,19 +383,6 @@ export default function App() {
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
 
-  /* ── Sync theme to <html> + Safari theme-color meta ── */
-  useEffect(() => {
-    const bg = dark ? "#0e0e0e" : "#f2f3f5";
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "theme-color";
-      document.head.appendChild(meta);
-    }
-    meta.content = bg;
-  }, [dark]);
-
 
 
   const activeWords = useCallback((ps = packsRef.current) =>
