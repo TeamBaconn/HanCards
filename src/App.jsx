@@ -383,8 +383,6 @@ export default function App() {
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
 
-
-
   const activeWords = useCallback((ps = packsRef.current) =>
     ps.filter(p => p.enabled).flatMap(p => p.words), []);
 
