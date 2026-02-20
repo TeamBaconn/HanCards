@@ -380,6 +380,7 @@ export default function App() {
 
   useEffect(() => { packsRef.current = packs; }, [packs]);
   useEffect(() => { scoresRef.current = scores; }, [scores]);
+  useEffect(() => { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); }, [dark]);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
 
