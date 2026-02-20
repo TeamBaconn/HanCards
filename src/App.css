@@ -1047,7 +1047,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 .quiz-screen {
-  padding: 2rem;
+  padding: 2rem 2rem 5rem 2rem;
   margin: 0;
   max-width: 600px;
   margin-left: auto;
@@ -1056,8 +1056,8 @@
 
 /* ── Prompt Card ── */
 .quiz-prompt-card {
-  width: 100%;
-  margin: 0 auto 1.5rem;
+  width: 100%; 
+  margin: 0 auto 1rem;
   background: var(--color-card-front-bg);
   border-radius: var(--radius-4xl);
   border: 3px solid var(--color-card-front-border);
