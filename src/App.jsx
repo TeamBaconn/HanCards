@@ -294,6 +294,7 @@ function FlipCard({ front, back, flipped, onFlip, onNext }) {
       prevFront.current = front;
       clearTimeout(timerRef.current);
       setPhase("idle"); setText(front || ""); setLabel("prompt");
+      setFontSize(getCardFontSize(front || ""));
     }
   }, [front]);
 
@@ -789,7 +790,7 @@ ${promptInput.trim()}`;
                         <button onClick={() => toggleCategory(cat)} className={`toggle-cat ${allCatEnabled ? 'toggle-cat--on' : ''}`} aria-label={tr('manage.toggleCategory', { cat })}>
                           <div className="toggle-cat-knob" />
                         </button>
-                        <span className="category-meta">{catPacks.length} {catPacks.length !== 1 ? tr('manage.packPlural') : tr('manage.packSingular')}</span>
+                        <span className="category-meta">{catPacks.filter(p => p.enabled).length}/{catPacks.length} {tr('manage.packPlural')}</span>
                         <button onClick={() => deleteCategory(cat)} title={`Delete all packs in ${cat}`}
                           className="btn-icon text-danger category-delete"><TrashIcon /></button>
                       </div>
