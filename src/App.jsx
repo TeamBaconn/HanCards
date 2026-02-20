@@ -374,11 +374,13 @@ export default function App() {
   const lastIdxRef  = useRef(null);
   const packsRef    = useRef(packs);
   const scoresRef   = useRef(scores);
+  const modeRef     = useRef(mode);
   const didFlipRef  = useRef(false);
   const screenRef   = useRef(screen);
 
   useEffect(() => { packsRef.current = packs; }, [packs]);
   useEffect(() => { scoresRef.current = scores; }, [scores]);
+  useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
 
 
@@ -406,6 +408,7 @@ export default function App() {
   /* ── Language selection ── */
   const handleLangSelect = async (lang) => {
     i18n.changeLanguage(lang);
+    window.gtag?.("event", "select_language", { language: lang });
     // Remove only default-imported packs; keep custom (user-added) packs
     const customPacks = packsRef.current.filter(p => !p.id.startsWith("pack-default-"));
     const imported = await importDefaultPacks(lang);
@@ -448,6 +451,7 @@ export default function App() {
       if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
       if (["ArrowUp", "ArrowDown", "Space"].includes(e.code)) {
         e.preventDefault(); setFlipped(f => !f); didFlipRef.current = true;
+        window.gtag?.("event", "card_flip", { mode: modeRef.current === "eng" ? "toKorean" : "fromKorean" });
       }
       if (["ArrowRight", "Enter"].includes(e.code)) { e.preventDefault(); nextCard(); }
     };
@@ -711,7 +715,7 @@ ${promptInput.trim()}`;
             ) : card ? (
               <>
                 <FlipCard front={front} back={back} flipped={flipped}
-                  onFlip={() => { setFlipped(f => !f); didFlipRef.current = true; }}
+                  onFlip={() => { setFlipped(f => !f); didFlipRef.current = true; window.gtag?.("event", "card_flip", { mode: mode === "eng" ? "toKorean" : "fromKorean" }); }}
                   onNext={nextCard} />
                 <div className="study-stats">
                   <span>{allWords.length} {tr('study.words')} · {enabledCount} {enabledCount !== 1 ? tr('study.packs') : tr('study.pack')}</span>

@@ -205,6 +205,7 @@ export default function Quiz({ allWords, scores, enabledCount, onScoreUpdate }) 
     const key = currentWord.korean;
     const oldScore = scores[key] ?? SCORE.defaultScore;
 
+    window.gtag?.("event", "quiz_answer", { result: isCorrect ? "correct" : "wrong", mode: quizMode });
 
     let newScore;
     if (isCorrect) {
