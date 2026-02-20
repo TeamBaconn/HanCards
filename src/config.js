@@ -71,7 +71,7 @@ export const LANGUAGES = [
     flag: "🇻🇳",
     color: "#da251d",
     borderColor: "#b01e18",
-    packs: ["tc3-vn.csv", "tc4-vn.csv"],
+    packs: ["sc1-vn.csv", "sc2-vn.csv", "tc3-vn.csv", "tc4-vn.csv"],
   },
   {
     code: "en",
@@ -79,7 +79,7 @@ export const LANGUAGES = [
     flag: "🇬🇧",
     color: "#1cb0f6",
     borderColor: "#1590c8",
-    packs: ["tc3-en.csv", "tc4-en.csv"],
+    packs: ["sc1-en.csv", "sc2-en.csv", "tc3-en.csv", "tc4-en.csv"],
   },
 ];
 
