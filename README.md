@@ -1,16 +1,62 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+![HanCards Logo](public/icon.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# HanCards
 
-## React Compiler
+**HanCards** is a web application for learning and practicing Korean vocabulary, with a focus on Hanja (Chinese characters used in Korean). It provides interactive study and quiz modes, customizable vocabulary packs, and multilingual support.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Purpose
 
-## Expanding the ESLint configuration
+HanCards helps learners of Korean (especially those interested in Hanja) to efficiently memorize and review vocabulary through spaced repetition, quizzes, and self-paced study. It is designed for both beginners and advanced learners, supporting multiple languages for the interface and word packs.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Features
+
+- **Study Mode:** Flip cards to reveal translations and practice at your own pace.
+- **Quiz Mode:** Multiple-choice quizzes to test your recall in both directions (Korean ↔ English/Vietnamese).
+- **Customizable Packs:** Enable or disable vocabulary packs by topic or level. Packs are loaded from CSV files for easy extension.
+- **Spaced Repetition:** Words are prioritized for review based on your performance, helping you focus on what needs practice.
+- **Progress Tracking:** Scores are saved locally in your browser.
+- **Multilingual UI:** Interface available in English and Vietnamese (easily extendable to other languages).
+- **Mobile Friendly:** Responsive design for use on phones, tablets, and desktops.
+
+## Getting Started
+
+### Online Demo
+
+Try HanCards online: [https://teambaconn.github.io/hancards](https://teambaconn.github.io/hancards)
+
+### Local Development
+
+1. **Install dependencies:**
+	```bash
+	npm install
+	```
+2. **Start the development server:**
+	```bash
+	npm run dev
+	```
+3. Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### Build for Production
+
+```bash
+npm run build
+```
+The output will be in the `dist/` folder.
+
+## Adding New Vocabulary Packs or Languages
+
+- To add a new language, see instructions in `src/config.js`.
+- To add new vocabulary packs, place CSV files in `public/packs/` and register them in the config.
+
+## Project Structure
+
+- `src/` — React source code
+- `public/packs/` — Vocabulary CSV files
+- `src/locales/` — UI translations
+- `src/config.js` — App configuration and language/pack registration
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
