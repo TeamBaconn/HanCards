@@ -26,17 +26,32 @@ HanCards helps learners of Korean (especially those interested in Hanja) to effi
 
 Try HanCards online: [https://teambaconn.github.io/hancards](https://teambaconn.github.io/hancards)
 
-### Local Development
+
+### Usage & Setup
 
 1. **Install dependencies:**
 	```bash
 	npm install
 	```
-2. **Start the development server:**
+
+2. **(Optional) Configure environment variables:**
+	If you want to self-host or customize the deployment, create a `.env` file in the project root:
+	```
+	VITE_GA_ID=         # (Optional) Google Analytics ID, e.g. G-XXXXXXXXXX
+	VITE_SITE_URL=      # The public URL where your site will be hosted (required for sitemap)
+	```
+
+3. **Start the development server:**
 	```bash
 	npm run dev
 	```
-3. Open [http://localhost:5173](http://localhost:5173) in your browser.
+	Then open [http://localhost:5173](http://localhost:5173) in your browser.
+
+4. **Build for production:**
+	```bash
+	npm run build
+	```
+	The output will be in the `dist/` folder.
 
 ### Build for Production
 
