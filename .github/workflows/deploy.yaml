@@ -13,6 +13,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    env:
+      VITE_GA_ID: ${{ secrets.VITE_GA_ID }}
+
     steps:
       - uses: actions/checkout@v4
 
