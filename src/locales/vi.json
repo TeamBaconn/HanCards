@@ -31,7 +31,16 @@
     "cardTipUpper": "nửa trên",
     "cardTipFlip": "để lật",
     "cardTipLower": "nửa dưới",
-    "cardTipNext": "để tiếp"
+    "cardTipNext": "để tiếp",
+    "startAutoSpeak": "Tự đọc (nhấn đôi để bỏ qua cài đặt)",
+    "stopAutoSpeak": "Dừng tự đọc",
+    "voiceSettings": "Cài đặt giọng đọc",
+    "defaultVoice": "Giọng mặc định",
+    "rate": "Tốc độ",
+    "pitch": "Cao độ",
+    "startSpeaking": "▶ Bắt đầu",
+    "cancelVoice": "Hủy",
+    "flipSpeed": "Tốc độ lật thẻ"
   },
   "manage": {
     "categories": "Danh mục",

@@ -31,7 +31,16 @@
     "cardTipUpper": "upper half",
     "cardTipFlip": "to flip",
     "cardTipLower": "lower half",
-    "cardTipNext": "for next"
+    "cardTipNext": "for next",
+    "startAutoSpeak": "Auto-speak (double-tap to skip settings)",
+    "stopAutoSpeak": "Stop auto-speak",
+    "voiceSettings": "Voice Settings",
+    "defaultVoice": "Default voice",
+    "rate": "Speed",
+    "pitch": "Pitch",
+    "startSpeaking": "▶ Start Speaking",
+    "cancelVoice": "Cancel",
+    "flipSpeed": "Flip speed"
   },
   "manage": {
     "categories": "Categories",

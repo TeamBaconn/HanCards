@@ -10,14 +10,17 @@
  * 3. Register the language below in LANGUAGES array:
  *      { code: "ja", label: "日本語", flag: "🇯🇵",
  *        color: "#dc3545", borderColor: "#b02a37",
- *        packs: ["tc3-ja.csv", "tc4-ja.csv"] }
+ *        packs: ["tc3-ja.csv", "tc4-ja.csv"],
+ *        ttsLang: "ja-JP",
+ *        ttsSample: "こんにちは、テストです。" }
  * 4. Import the locale in  src/i18n.js  and add it to `resources`.
  * 5. Done — it appears in the first-visit picker and language switcher.
  */
 
 /* ── Storage keys ── */
-export const STORAGE_KEY = "HANCARDS";
-export const LANG_KEY = "HANCARDS_LANG";
+export const STORAGE_KEY        = "HANCARDS";
+export const LANG_KEY           = "HANCARDS_LANG";
+export const VOICE_SETTINGS_KEY = "HANCARDS_VOICE";
 
 /* ── Quiz scoring and settings ── */
 
@@ -72,6 +75,10 @@ export const LANGUAGES = [
     color: "#da251d",
     borderColor: "#b01e18",
     packs: ["sc1-vn.csv", "sc2-vn.csv", "tc3-vn.csv", "tc4-vn.csv"],
+    /** BCP-47 tag used for text-to-speech on the translation side */
+    ttsLang: "vi-VN",
+    /** Sample sentence spoken in the voice-settings preview */
+    ttsSample: "Học tiếng Hàn cùng Hancards",
   },
   {
     code: "en",
@@ -80,8 +87,30 @@ export const LANGUAGES = [
     color: "#1cb0f6",
     borderColor: "#1590c8",
     packs: ["sc1-en.csv", "sc2-en.csv", "tc3-en.csv", "tc4-en.csv"],
+    ttsLang: "en-US",
+    ttsSample: "Learn Korean with Hancards",
   },
 ];
+
+/** BCP-47 tag and preview sample for the Korean (target) side of every card */
+export const KOREAN_TTS_LANG   = "ko-KR";
+export const KOREAN_TTS_SAMPLE = "한카드와 함께 한국어를 배우세요.";
+
+/* ── Auto-speak settings ─────────────────────────────────── */
+export const AUTO_SPEAK = {
+  /** Speech rate (1 = normal; user can override in voice settings) */
+  rate: 0.9,
+  /** Speech pitch (1 = normal; user can override in voice settings) */
+  pitch: 1.0,
+  /** ms to wait before speaking the front of a new card */
+  startDelay: 400,
+  /** ms to wait after front speech before flipping */
+  postFrontDelay: 600,
+  /** ms to wait after visual flip before speaking the back */
+  preBackDelay: 350,
+  /** ms to wait after back speech before advancing to next card */
+  postBackDelay: 1200,
+};
 
 /** Ordered list of language codes for the floating cycle button */
 export const LANG_CYCLE = LANGUAGES.map(l => l.code);

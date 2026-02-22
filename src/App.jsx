@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  STORAGE_KEY, LANG_KEY, SCORE, scoreColor,
+  STORAGE_KEY, LANG_KEY, VOICE_SETTINGS_KEY, SCORE, scoreColor,
   LANGUAGES, LANG_MAP,
   CARD_FONT_STEPS, CSV_HINT,
+  KOREAN_TTS_LANG, KOREAN_TTS_SAMPLE, AUTO_SPEAK,
 } from "./config";
 import Quiz from "./Quiz";
 import "./App.css";
@@ -131,6 +132,22 @@ const TrashIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
     <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+);
+
+const SpeakerPlayIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+  </svg>
+);
+
+const SpeakerStopIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <line x1="23" y1="9" x2="17" y2="15"/>
+    <line x1="17" y1="9" x2="23" y2="15"/>
   </svg>
 );
 
@@ -330,10 +347,10 @@ function FlipCard({ front, back, flipped, onFlip, onNext }) {
 
 /* ────────────────────── Modal ────────────────────────────── */
 
-function Modal({ title, onClose, children }) {
+function Modal({ title, onClose, children, className }) {
   return (
     <div className="modal-overlay">
-      <div className="modal">
+      <div className={`modal${className ? ` ${className}` : ""}`}>
         <div className="modal-header">
           <span className="modal-title">{title}</span>
           <button onClick={onClose} className="modal-close">✕</button>
@@ -341,6 +358,115 @@ function Modal({ title, onClose, children }) {
         <div className="modal-body ps">{children}</div>
       </div>
     </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   VoiceSettingsModal
+   ════════════════════════════════════════════════════════════ */
+
+function VoiceSettingsModal({ settings, langPairs, onClose, onStart, onSaveSettings }) {
+  const { t: tr } = useTranslation();
+  const [local, setLocal] = useState(() => {
+    const langs = {};
+    langPairs.forEach(({ ttsLang }) => {
+      langs[ttsLang] = {
+        voiceURI: settings.langs?.[ttsLang]?.voiceURI ?? null,
+        rate:     settings.langs?.[ttsLang]?.rate     ?? AUTO_SPEAK.rate,
+        pitch:    settings.langs?.[ttsLang]?.pitch    ?? AUTO_SPEAK.pitch,
+      };
+    });
+    return { langs, flipSpeed: settings.flipSpeed ?? 1.0 };
+  });
+  const [voices, setVoices] = useState(() => window.speechSynthesis?.getVoices() ?? []);
+
+  useEffect(() => {
+    const load = () => setVoices(window.speechSynthesis?.getVoices() ?? []);
+    window.speechSynthesis?.addEventListener("voiceschanged", load);
+    return () => window.speechSynthesis?.removeEventListener("voiceschanged", load);
+  }, []);
+
+  const voicesFor = (ttsLang) =>
+    voices.filter(v => v.lang.toLowerCase().startsWith(ttsLang.slice(0, 2).toLowerCase()));
+
+  const setLang = (ttsLang, patch) =>
+    setLocal(s => ({ ...s, langs: { ...s.langs, [ttsLang]: { ...s.langs[ttsLang], ...patch } } }));
+
+  const testVoice = (sample, ttsLang) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const lv  = local.langs[ttsLang];
+    const utt = new SpeechSynthesisUtterance(sample);
+    utt.lang  = ttsLang;
+    utt.rate  = lv?.rate  ?? AUTO_SPEAK.rate;
+    utt.pitch = lv?.pitch ?? AUTO_SPEAK.pitch;
+    const uri = lv?.voiceURI;
+    if (uri) { const v = voices.find(gv => gv.voiceURI === uri); if (v) utt.voice = v; }
+    window.speechSynthesis.speak(utt);
+  };
+
+  return (
+    <Modal title={tr('study.voiceSettings')} onClose={onClose} className="modal--narrow">
+      <div className="voice-lang-list">
+        {langPairs.map(({ label, ttsLang, sample }, idx) => {
+          const available = voicesFor(ttsLang);
+          const lv = local.langs[ttsLang] ?? {};
+          return (
+            <>
+              {idx > 0 && (
+                <div className="voice-lang-separator">
+                  <hr />
+                </div>
+              )}
+              <div key={ttsLang} className="voice-lang-card voice-lang-card--plain">
+                <div className="voice-lang-label">{label}</div>
+                <div className="voice-lang-controls">
+                  <select
+                    className="input voice-select"
+                    value={lv.voiceURI ?? ""}
+                    onChange={e => setLang(ttsLang, { voiceURI: e.target.value || null })}
+                  >
+                    <option value="">{tr('study.defaultVoice')}</option>
+                    {available.map(v => (
+                      <option key={v.voiceURI} value={v.voiceURI}>{v.name}</option>
+                    ))}
+                  </select>
+                  <button className="btn btn-ghost voice-test-btn" onClick={() => testVoice(sample, ttsLang)}>▶</button>
+                </div>
+                <div className="voice-inline-row">
+                  <span className="voice-inline-label">{tr('study.rate')}</span>
+                  <input type="range" min="0" max="2" step="0.25" value={lv.rate ?? AUTO_SPEAK.rate}
+                    onChange={e => setLang(ttsLang, { rate: parseFloat(e.target.value) })}
+                    className="voice-slider" />
+                  <span className="voice-inline-label voice-inline-gap">{tr('study.pitch')}</span>
+                  <input type="range" min="0" max="2" step="0.1" value={lv.pitch ?? AUTO_SPEAK.pitch}
+                    onChange={e => setLang(ttsLang, { pitch: parseFloat(e.target.value) })}
+                    className="voice-slider" />
+                </div>
+              </div>
+            </>
+          );
+        })}
+      </div>
+      <div className="voice-flip-speed-section">
+        <div className="voice-lang-separator"><hr /></div>
+        <div className="voice-flip-label-row">
+          <span className="voice-inline-label voice-flip-label">{tr('study.flipSpeed')}</span>
+          <span className="voice-flip-speed-value">{local.flipSpeed.toFixed(1)}x</span>
+        </div>
+        <div className="voice-flip-slider-row">
+          <input type="range" min="0.3" max="5" step="0.1" value={local.flipSpeed}
+            onChange={e => setLocal(s => ({ ...s, flipSpeed: parseFloat(e.target.value) }))}
+            className="voice-slider" />
+        </div>
+      </div>
+      <div className="voice-modal-actions">
+        <button className="btn btn-primary"
+          onClick={() => { onSaveSettings(local); onStart(); onClose(); }}>
+          {tr('study.startSpeaking')}
+        </button>
+      </div>
+    </Modal>
   );
 }
 
@@ -371,19 +497,47 @@ export default function App() {
   const [promptInput, setPromptInput] = useState("");
   const [promptCopied, setPromptCopied] = useState(false);
   const [expandedCats, setExpandedCats] = useState({});
+  const [autoSpeak, setAutoSpeak]   = useState(false);
+  const [voiceModal, setVoiceModal] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState(() => {
+    try { const r = localStorage.getItem(VOICE_SETTINGS_KEY); if (r) return JSON.parse(r); } catch {}
+    return { langs: {} };
+  });
 
-  const lastIdxRef  = useRef(null);
-  const packsRef    = useRef(packs);
-  const scoresRef   = useRef(scores);
-  const modeRef     = useRef(mode);
-  const didFlipRef  = useRef(false);
-  const screenRef   = useRef(screen);
+  const lastIdxRef        = useRef(null);
+  const packsRef          = useRef(packs);
+  const scoresRef         = useRef(scores);
+  const modeRef           = useRef(mode);
+  const didFlipRef        = useRef(false);
+  const screenRef         = useRef(screen);
+  const autoSpeakRef      = useRef(false);
+  const voiceSettingsRef  = useRef(voiceSettings);
+  const speakerTapTimer   = useRef(null);
 
   useEffect(() => { packsRef.current = packs; }, [packs]);
   useEffect(() => { scoresRef.current = scores; }, [scores]);
   useEffect(() => { document.documentElement.setAttribute("data-theme", dark ? "dark" : "light"); }, [dark]);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
+  useEffect(() => { voiceSettingsRef.current = voiceSettings; }, [voiceSettings]);
+
+  const saveVoiceSettings = useCallback((s) => {
+    setVoiceSettings(s); voiceSettingsRef.current = s;
+    try { localStorage.setItem(VOICE_SETTINGS_KEY, JSON.stringify(s)); } catch {}
+  }, []);
+
+  const handleSpeakerTap = useCallback(() => {
+    if (autoSpeak) { setAutoSpeak(false); return; }
+    if (speakerTapTimer.current) {
+      clearTimeout(speakerTapTimer.current); speakerTapTimer.current = null;
+      setAutoSpeak(true);
+    } else {
+      speakerTapTimer.current = setTimeout(() => {
+        speakerTapTimer.current = null;
+        setVoiceModal(true);
+      }, 300);
+    }
+  }, [autoSpeak]);
 
   const activeWords = useCallback((ps = packsRef.current) =>
     ps.filter(p => p.enabled).flatMap(p => p.words), []);
@@ -458,6 +612,68 @@ export default function App() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [nextCard]);
+
+  /* ── Auto-speak: stop when leaving study screen ── */
+  useEffect(() => {
+    if (screen !== "study") {
+      autoSpeakRef.current = false;
+      setAutoSpeak(false);
+      window.speechSynthesis?.cancel();
+    }
+  }, [screen]);
+
+  /* ── Auto-speak loop ── */
+  useEffect(() => {
+    autoSpeakRef.current = autoSpeak;
+    if (!autoSpeak || cardIdx === null) {
+      if (!autoSpeak) window.speechSynthesis?.cancel();
+      return;
+    }
+    const words = activeWords(packsRef.current);
+    const currentCard = words[cardIdx];
+    if (!currentCard) return;
+
+    const isEngMode = modeRef.current === "eng";
+    const transLang = LANG_MAP[i18n.language]?.ttsLang ?? "en-US";
+    const frontText = isEngMode ? currentCard.english : currentCard.korean;
+    const backText  = isEngMode ? currentCard.korean  : currentCard.english;
+    const frontLang = isEngMode ? transLang      : KOREAN_TTS_LANG;
+    const backLang  = isEngMode ? KOREAN_TTS_LANG : transLang;
+
+    let cancelled = false;
+    const timers = [];
+    const delay = (ms) => new Promise(r => { const id = setTimeout(r, ms); timers.push(id); });
+    const speak = (text, lang) => new Promise(resolve => {
+      if (!window.speechSynthesis || cancelled) { resolve(); return; }
+      window.speechSynthesis.cancel();
+      const vs  = voiceSettingsRef.current;
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang  = lang;
+      utt.rate  = vs.langs?.[lang]?.rate  ?? AUTO_SPEAK.rate;
+      utt.pitch = vs.langs?.[lang]?.pitch ?? AUTO_SPEAK.pitch;
+      const uri = vs.langs?.[lang]?.voiceURI;
+      if (uri) { const v = window.speechSynthesis.getVoices().find(gv => gv.voiceURI === uri); if (v) utt.voice = v; }
+      utt.onend = resolve;
+      utt.onerror = resolve;
+      window.speechSynthesis.speak(utt);
+    });
+
+    const run = async () => {
+      setFlipped(false);
+      const flipSpeed = voiceSettingsRef.current?.flipSpeed ?? 1.0;
+      await delay(AUTO_SPEAK.startDelay     / flipSpeed);  if (cancelled) return;
+      await speak(frontText, frontLang);                   if (cancelled) return;
+      await delay(AUTO_SPEAK.postFrontDelay / flipSpeed);  if (cancelled) return;
+      setFlipped(true); didFlipRef.current = true;
+      await delay(AUTO_SPEAK.preBackDelay   / flipSpeed);  if (cancelled) return;
+      await speak(backText, backLang);                     if (cancelled) return;
+      await delay(AUTO_SPEAK.postBackDelay  / flipSpeed);  if (cancelled) return;
+      nextCard();
+    };
+
+    run();
+    return () => { cancelled = true; window.speechSynthesis?.cancel(); timers.forEach(clearTimeout); };
+  }, [autoSpeak, cardIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Collapse all categories when entering manage tab ── */
   useEffect(() => {
@@ -625,6 +841,12 @@ ${promptInput.trim()}`;
   const avgScore = allWords.length ? Math.round(allWords.reduce((a, w) => a + (scores[w.korean] ?? SCORE.defaultScore), 0) / allWords.length) : 0;
   const cardScore = card ? (scores[card.korean] ?? SCORE.defaultScore) : 0;
 
+  /* ── Voice lang pairs for the settings modal ── */
+  const transEntry    = LANG_MAP[i18n.language];
+  const transSide     = { label: transEntry?.label ?? i18n.language, ttsLang: transEntry?.ttsLang ?? "en-US", sample: transEntry?.ttsSample ?? "Hello." };
+  const koSide        = { label: "한국어", ttsLang: KOREAN_TTS_LANG, sample: KOREAN_TTS_SAMPLE };
+  const voiceLangPairs = mode === "eng" ? [transSide, koSide] : [koSide, transSide];
+
   if (screen === "loading") return (
     <div className="app loading-screen" data-theme={dark ? "dark" : "light"}>
       <p className="text-secondary">{tr('loading')}</p>
@@ -689,7 +911,8 @@ ${promptInput.trim()}`;
         {screen === "study" && (
           <div className="study-screen">
             {allWords.length > 0 && (
-              <div className="mode-toggle">
+              <div className="mode-toggle mode-toggle--study">
+                <div />
                 <div className="mode-toggle-group">
                   {[['eng', tr('study.toKorean')], ['kor', tr('study.fromKorean')]].map(([v, label]) => (
                     <button key={v} onClick={() => { setMode(v); setFlipped(false); }}
@@ -698,6 +921,15 @@ ${promptInput.trim()}`;
                       {label}
                     </button>
                   ))}
+                </div>
+                <div className="mode-toggle-right">
+                  <button
+                    onClick={handleSpeakerTap}
+                    className={`auto-speak-btn ${autoSpeak ? 'auto-speak-btn--active' : ''}`}
+                    title={autoSpeak ? tr('study.stopAutoSpeak') : tr('study.startAutoSpeak')}
+                  >
+                    {autoSpeak ? <SpeakerStopIcon /> : <SpeakerPlayIcon />}
+                  </button>
                 </div>
               </div>
             )}
@@ -924,6 +1156,17 @@ ${promptInput.trim()}`;
             </p>
           )}
         </Modal>
+      )}
+
+      {/* ── VOICE SETTINGS MODAL ── */}
+      {voiceModal && (
+        <VoiceSettingsModal
+          settings={voiceSettings}
+          langPairs={voiceLangPairs}
+          onClose={() => setVoiceModal(false)}
+          onStart={() => setAutoSpeak(true)}
+          onSaveSettings={saveVoiceSettings}
+        />
       )}
 
       {/* ── Language Selection Modal ── */}
