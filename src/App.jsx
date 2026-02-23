@@ -956,13 +956,19 @@ ${promptInput.trim()}`;
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
-      <pwa-install 
-        id="pwa-install" 
+      <pwa-install
+        id="pwa-install"
         manifest-url="/manifest.webmanifest"
-        ref={(el) => 
-        {
-          if (!el) return; 
-          el.showDialog(true);
+        ref={(el) => {
+          if (!el) return;
+
+          const isPWA =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true;
+
+          if (!isPWA) {
+            el.showDialog(true);
+          }
         }}
       ></pwa-install>
       {/* ── Header ── */}
