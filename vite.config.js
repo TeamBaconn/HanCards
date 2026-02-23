@@ -9,25 +9,25 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-        VitePWA({
-        registerType: 'autoUpdate',
-        manifest: {
-          name: 'HanCards',
-          short_name: 'HanCards',
-          start_url: '/',
-          display: 'standalone',
-          background_color: '#ffffff',
-          theme_color: '#ffffff',
-          icons: [
-            {
-              src: '/icon.png',
-              sizes: '256x256',
-              type: 'image/png',
-            }, 
-          ],
-        },
-      }),
       react(),
+      VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'HanCards',
+        short_name: 'HanCards',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: '/icon.png',
+            sizes: '256x256',
+            type: 'image/png',
+          }, 
+        ],
+      },
+      }),
       sitemap({
         hostname: env.VITE_SITE_URL, 
       }),
