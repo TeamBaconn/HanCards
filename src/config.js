@@ -37,7 +37,7 @@ export const SCORE = {
   /** Points added when user skips without revealing the answer (knows it) */
   skipBonus: 5,
   /** Points subtracted when user reveals the answer (needs practice) */
-  flipPenalty: 20,
+  flipPenalty: 0,
   /** Points added for correct quiz answer */
   quizBonus: 10,
   /** Points subtracted for wrong quiz answer */
