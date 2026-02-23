@@ -965,9 +965,7 @@ ${promptInput.trim()}`;
           el.showDialog(true);
         }}
 
-        install-description={tr('pwa.installDescription')} 
-        
-        use-local-storage
+        install-description={tr('pwa.installDescription')}  
         manual-chrome
       ></pwa-install>
       }
