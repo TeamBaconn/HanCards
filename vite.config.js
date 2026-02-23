@@ -18,8 +18,9 @@ export default defineConfig(({ mode }) => {
         description: 'Learn Korean vocabulary with smart flashcards',
         categories: ['education', 'utilities', 'productivity'], 
         
-        start_url: '/', 
+        start_url: '/',
         
+        display_override: ['fullscreen', 'minimal-ui'],
         display: 'standalone',
         orientation: 'portrait',
 
