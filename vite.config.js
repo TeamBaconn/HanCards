@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'HanCards',
         short_name: 'HanCards',

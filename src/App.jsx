@@ -8,6 +8,7 @@ import {
   KOREAN_TTS_LANG, KOREAN_TTS_SAMPLE, AUTO_SPEAK,
 } from "./config";
 import Quiz from "./Quiz";
+import '@khmyznikov/pwa-install';
 import "./App.css";
 
 /* ════════════════════════════════════════════════════════════
@@ -955,7 +956,11 @@ ${promptInput.trim()}`;
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
-
+      <pwa-install
+        manual-how-to
+        id="pwa-install" 
+        manifest-url="/manifest.webmanifest"
+      ></pwa-install>
       {/* ── Header ── */}
       <header className="header">
         <div className="header-inner">
