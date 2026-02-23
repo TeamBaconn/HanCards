@@ -114,7 +114,7 @@
     "noWordsEnd": "and enable some packs!"
   },
   "pwa": {
-    "installDescription": "Install HanCards for offline study and quick access. Tap Install to add it to your home screen."
+    "installDescription": "Install HanCards for offline study and quick access."
   },
   "loading": "Loading…"
 }
