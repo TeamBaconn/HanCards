@@ -959,8 +959,13 @@ ${promptInput.trim()}`;
       {
       (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) && <pwa-install
         id="pwa-install"
-        install-description={tr('pwa.installDescription')}
-        manifest-url="/manifest.webmanifest" 
+        manifest-url="/manifest.webmanifest"
+        ref={(el) => {
+          if (!el) return;
+          el.showDialog(true);
+        }}
+
+        install-description={tr('pwa.installDescription')} 
         
         use-local-storage
         manual-chrome
