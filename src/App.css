@@ -271,8 +271,7 @@
 
 .nav-tabs {
   display: flex;
-  flex-shrink: 0;
-  min-height: 42px;
+  flex-shrink: 0;  
 }
 
 .nav-tab {
@@ -1230,9 +1229,9 @@
   right: 0;
   z-index: 100;
   background: var(--color-header-bg);
-  border-top: 1px solid var(--color-header-border);
-  height: 60px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--color-header-border); 
+  padding-top: 1rem;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
 }
 
 .bottom-nav-item {
