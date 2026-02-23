@@ -152,6 +152,44 @@ const SpeakerStopIcon = () => (
   </svg>
 );
 
+const NavQuizIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+const NavStudyIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="3" width="14" height="18" rx="2"/>
+    <line x1="9" y1="8" x2="15" y2="8"/>
+    <line x1="9" y1="12" x2="15" y2="12"/>
+    <line x1="9" y1="16" x2="13" y2="16"/>
+  </svg>
+);
+const NavManageIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6"/>
+    <line x1="8" y1="12" x2="21" y2="12"/>
+    <line x1="8" y1="18" x2="21" y2="18"/>
+    <line x1="3" y1="6" x2="3.01" y2="6"/>
+    <line x1="3" y1="12" x2="3.01" y2="12"/>
+    <line x1="3" y1="18" x2="3.01" y2="18"/>
+  </svg>
+);
+const NavAboutIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="16" x2="12" y2="12"/>
+    <line x1="12" y1="8" x2="12.01" y2="8"/>
+  </svg>
+);
+
+const NAV_ITEMS = [
+  ["quiz",   "nav.quiz",   NavQuizIcon],
+  ["study",  "nav.study",  NavStudyIcon],
+  ["manage", "nav.manage", NavManageIcon],
+  ["about",  "nav.about",  NavAboutIcon],
+];
+
 /* ════════════════════════════════════════════════════════════
    Progress Chart
    ════════════════════════════════════════════════════════════ */
@@ -613,11 +651,11 @@ export default function App() {
     packsRef.current = p; scoresRef.current = s;
     if (isNew) {
       setLangModal(true);
-      setScreen("manage");
+      goToManage(p);
     } else {
       const words = activeWords(p);
-      setScreen(words.length ? "study" : "manage");
-      if (words.length) setCardIdx(pickCard(words, s, null));
+      if (words.length) { setScreen("study"); setCardIdx(pickCard(words, s, null)); }
+      else goToManage(p);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -635,7 +673,7 @@ export default function App() {
     setFlipped(false); didFlipRef.current = false; lastIdxRef.current = null;
     persist(merged, scoresRef.current);
     setLangModal(false);
-    setScreen(words.length ? "study" : "manage");
+    if (words.length) setScreen("study"); else goToManage(merged);
   };
 
   /* ── Next card with scoring ── */
@@ -737,17 +775,16 @@ export default function App() {
     return () => { cancelled = true; window.speechSynthesis?.cancel(); timers.forEach(clearTimeout); };
   }, [autoSpeak, cardIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Collapse all categories when entering manage tab ── */
-  useEffect(() => {
-    if (screen === "manage") {
-      const byCategory = {};
-      packsRef.current.forEach(p => {
-        const cat = p.category || p.pack_category || "Uncategorized";
-        byCategory[cat] = false;
-      });
-      setExpandedCats(byCategory);
-    }
-  }, [screen]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* ── Navigate to manage screen with categories pre-collapsed ── */
+  const goToManage = useCallback((ps = packsRef.current) => {
+    const byCategory = {};
+    ps.forEach(p => {
+      const cat = p.category || p.pack_category || "Uncategorized";
+      byCategory[cat] = false;
+    });
+    setExpandedCats(byCategory);
+    setScreen("manage");
+  }, []);
 
   /* ── Pack management ── */
   const togglePack = (id) => {
@@ -930,7 +967,7 @@ ${promptInput.trim()}`;
           </div>
           <nav className="nav-tabs">
             {[["quiz", tr('nav.quiz')], ["study", tr('nav.study')], ["manage", tr('nav.manage')], ["about", tr('nav.about')]].map(([s, lbl]) => (
-              <button key={s} onClick={() => setScreen(s)} className={`nav-tab ${screen === s ? 'nav-tab--active' : ''}`}>{lbl}</button>
+              <button key={s} onClick={() => s === "manage" ? goToManage() : setScreen(s)} className={`nav-tab ${screen === s ? 'nav-tab--active' : ''}`}>{lbl}</button>
             ))}
           </nav>
         </div>
@@ -960,7 +997,7 @@ ${promptInput.trim()}`;
             allWords={allWords}
             scores={scores}
             enabledCount={enabledCount}
-            onGoToManage={() => setScreen("manage")}
+            onGoToManage={() => goToManage()}
             onScoreUpdate={(key, newScore) => {
               const s = { ...scores, [key]: newScore };
               setScores(s); scoresRef.current = s;
@@ -998,7 +1035,7 @@ ${promptInput.trim()}`;
             {allWords.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">📚</div>
-                <p>{tr('study.noPacks')} <strong className="empty-state-link" onClick={() => setScreen("manage")}>{tr('nav.manage')}</strong> {tr('study.noPacksEnd')}</p>
+                <p>{tr('study.noPacks')} <strong className="empty-state-link" onClick={() => goToManage()}>{tr('nav.manage')}</strong> {tr('study.noPacksEnd')}</p>
               </div>
             ) : card ? (
               <>
@@ -1249,6 +1286,16 @@ ${promptInput.trim()}`;
           </div>
         </div>
       )}
+
+      {/* ── Bottom Nav (portrait mode) ── */}
+      <nav className="bottom-nav">
+        {NAV_ITEMS.map(([s, key, Icon]) => (
+          <button key={s} onClick={() => s === "manage" ? goToManage() : setScreen(s)} className={`bottom-nav-item${screen === s ? ' bottom-nav-item--active' : ''}`}>
+            <Icon />
+            <span className="bottom-nav-label">{tr(key)}</span>
+          </button>
+        ))}
+      </nav>
 
       {/* ── Floating language switcher ── */}
       <button onClick={openLangModal} className="fab fab-lang">
