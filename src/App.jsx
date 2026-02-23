@@ -960,8 +960,8 @@ ${promptInput.trim()}`;
         id="pwa-install"
         manifest-url="/manifest.webmanifest"
 
-        install-description={tr('pwa.installDescription')}  
-        manual-chrome
+        install-description={tr('pwa.installDescription')}
+        
         use-local-storage
       ></pwa-install>}
       {/* ── Header ── */}
