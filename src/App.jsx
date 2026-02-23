@@ -956,10 +956,14 @@ ${promptInput.trim()}`;
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
-      <pwa-install
-        manual-how-to
+      <pwa-install 
         id="pwa-install" 
         manifest-url="/manifest.webmanifest"
+        ref={(el) => 
+        {
+          if (!el) return; 
+          el.showDialog(true);
+        }}
       ></pwa-install>
       {/* ── Header ── */}
       <header className="header">
