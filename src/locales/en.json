@@ -113,5 +113,8 @@
     "noWords": "Need at least 2 active words. Go to",
     "noWordsEnd": "and enable some packs!"
   },
+  "pwa": {
+    "installDescription": "Install HanCards for offline study and quick access. Tap Install to add it to your home screen."
+  },
   "loading": "Loading…"
 }

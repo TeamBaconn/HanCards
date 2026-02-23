@@ -956,21 +956,16 @@ ${promptInput.trim()}`;
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
-      <pwa-install
+      {
+      (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) && <pwa-install
         id="pwa-install"
-        manifest-url="/manifest.webmanifest"
-        ref={(el) => {
-          if (!el) return;
-
-          const isPWA =
-            window.matchMedia('(display-mode: standalone)').matches ||
-            window.navigator.standalone === true;
-
-          if (!isPWA) {
-            el.showDialog(true);
-          }
-        }}
+        install-description={tr('pwa.installDescription')}
+        manifest-url="/manifest.webmanifest" 
+        
+        use-local-storage
+        manual-chrome
       ></pwa-install>
+      }
       {/* ── Header ── */}
       <header className="header">
         <div className="header-inner">
