@@ -15,10 +15,17 @@ export default defineConfig(({ mode }) => {
       manifest: {
         name: 'HanCards',
         short_name: 'HanCards',
+        description: 'Learn Korean vocabulary with smart flashcards',
+        categories: ['education', 'utilities', 'productivity'], 
+        
         start_url: '/',
+        
+        display_override: ['fullscreen', 'minimal-ui'],
         display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#ffffff',
+        orientation: 'portrait',
+
+        background_color: '#1e1e1e',
+        theme_color: '#ffdbd1',
         icons: [
           {
             src: '/icon.png',

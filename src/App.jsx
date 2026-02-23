@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+// Wake Lock API polyfill/logic
 import { useTranslation } from "react-i18next";
 import {
   STORAGE_KEY, LANG_KEY, VOICE_SETTINGS_KEY, SCORE, scoreColor,
@@ -508,6 +509,9 @@ export default function App() {
   const packsRef          = useRef(packs);
   const scoresRef         = useRef(scores);
   const modeRef           = useRef(mode);
+  // Wake Lock state
+  const wakeLockRef = useRef(null);
+  const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator;
   const didFlipRef        = useRef(false);
   const screenRef         = useRef(screen);
   const autoSpeakRef      = useRef(false);
@@ -526,18 +530,76 @@ export default function App() {
     try { localStorage.setItem(VOICE_SETTINGS_KEY, JSON.stringify(s)); } catch {}
   }, []);
 
+  // Wake Lock request/release
+  const requestWakeLock = useCallback(async () => {
+    if (!wakeLockSupported) return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request('screen');
+      wakeLockRef.current.addEventListener('release', () => {
+        wakeLockRef.current = null;
+        // Optionally notify user
+        // console.log('Wake Lock was released');
+      });
+      // console.log('Wake Lock is active');
+    } catch (err) {
+      // console.error('Wake Lock error', err);
+    }
+  }, [wakeLockSupported]);
+
+  const releaseWakeLock = useCallback(() => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
+    }
+  }, []);
+
+  // Speaker tap logic
   const handleSpeakerTap = useCallback(() => {
-    if (autoSpeak) { setAutoSpeak(false); return; }
+    if (autoSpeak) {
+      setAutoSpeak(false);
+      releaseWakeLock();
+      return;
+    }
     if (speakerTapTimer.current) {
       clearTimeout(speakerTapTimer.current); speakerTapTimer.current = null;
       setAutoSpeak(true);
+      requestWakeLock();
     } else {
       speakerTapTimer.current = setTimeout(() => {
         speakerTapTimer.current = null;
         setVoiceModal(true);
       }, 300);
     }
-  }, [autoSpeak]);
+  }, [autoSpeak, requestWakeLock, releaseWakeLock]);
+  // Wake lock effect: activate when autoSpeak is enabled
+  useEffect(() => {
+    if (autoSpeak) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+    // Clean up on unmount
+    return () => releaseWakeLock();
+  }, [autoSpeak, requestWakeLock, releaseWakeLock]);
+
+  // Restore wake lock on visibility change if speaker is on
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (
+        wakeLockSupported &&
+        autoSpeak &&
+        document.visibilityState === 'visible'
+      ) {
+        setTimeout(() => {
+          requestWakeLock();
+        }, 1000);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [autoSpeak, requestWakeLock, wakeLockSupported]);
 
   const activeWords = useCallback((ps = packsRef.current) =>
     ps.filter(p => p.enabled).flatMap(p => p.words), []);
