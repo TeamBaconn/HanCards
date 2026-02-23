@@ -956,19 +956,14 @@ ${promptInput.trim()}`;
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
-      {
-      (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) && <pwa-install
+      {!(window.matchMedia('(display-mode: standalone)').matches ||window.navigator.standalone === true) && <pwa-install
         id="pwa-install"
         manifest-url="/manifest.webmanifest"
-        ref={(el) => {
-          if (!el) return;
-          el.showDialog(true);
-        }}
 
         install-description={tr('pwa.installDescription')}  
         manual-chrome
-      ></pwa-install>
-      }
+        use-local-storage
+      ></pwa-install>}
       {/* ── Header ── */}
       <header className="header">
         <div className="header-inner">
