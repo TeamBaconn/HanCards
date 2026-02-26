@@ -528,14 +528,14 @@ export default function App() {
   const [importModal, setImportModal] = useState(false);
   const [promptModal, setPromptModal] = useState(false);
   const [langModal, setLangModal]     = useState(false);
-  const [newPackName, setNewPackName] = useState("");
+  
   const [importText, setImportText]   = useState("");
   const [importMsg, setImportMsg]     = useState("");
   const [wordInput, setWordInput]     = useState({ korean: "", english: "" });
   const [editWordIdx, setEditWordIdx] = useState(null);
   const [addWordMsg, setAddWordMsg]   = useState("");
   const [promptInput, setPromptInput] = useState("");
-  const [promptCopied, setPromptCopied] = useState(false);
+  const [learningLanguage, setLearningLanguage] = useState("Korean");
   const [expandedCats, setExpandedCats] = useState({});
   const [autoSpeak, setAutoSpeak]   = useState(false);
   const [voiceModal, setVoiceModal] = useState(false);
@@ -819,12 +819,7 @@ export default function App() {
     lastIdxRef.current = null; persist(np, scores);
   };
 
-  const addPack = () => {
-    const name = newPackName.trim();
-    if (!name) { window.alert(tr('manage.addPackError')); return; }
-    const np = [...packs, { id: `pack-${Date.now()}`, name, words: [], enabled: false }];
-    setPacks(np); setNewPackName(""); persist(np, scores);
-  };
+  
 
   const renamePack = (id, name) => {
     const np = packs.map(p => p.id === id ? { ...p, name } : p);
@@ -897,28 +892,33 @@ export default function App() {
   };
 
   const generatePrompt = () => {
-    if (!promptInput.trim()) return;
-    const prompt = `Convert the following Korean study material into a CSV with exactly 4 columns: pack_category, pack_name, korean, english.
+    const prompt = `Convert the following {learning_language} study material into a CSV with exactly 4 columns: pack_category, pack_name, {learning_language}, translation.
 
 Rules:
-- First row must be exactly: pack_category,pack_name,korean,translation
 - Use the lesson/topic title as pack_name (same value for all words in the same lesson). Shorten the pack_name — keep the same language as the original title. Use shortcodes for common things that don't need to be fully spelled out (e.g. "Bài 1" instead of "Bài học số 1", "Ch2" instead of "Chapter 2", "L3" instead of "Lesson 3").
 - Use the course/book/overall group as pack_category (same value for all packs in the same group)
-- korean = the Korean word or phrase
-- translation = the English or Vietnamese translation (keep it concise, under 80 chars)
+- {learning_language} = the {learning_language} word or phrase
+- translation = the translation of the word, if translation exists in the data, use it exactly, if not, translate it into English (keep it concise)
 - If a value contains a comma, wrap it in double quotes
 - Output ONLY the raw CSV. No explanation, no markdown fences, no extra text.
 
 Naming rules:
-- If pack_category or pack_name is long, shorten it to only the essential part (e.g. drop generic words like "Chapter", "Unit", "Lesson", "Bài", "과", "단원" unless they are the only identifier)
-- IMPORTANT: Keep the same language as the original title. If the title is in Vietnamese, keep it in Vietnamese. If it is in Korean, keep it in Korean. If it is in English, keep it in English. Do NOT translate or transliterate.
+- If pack_category or pack_name is long, shorten it to only the essential part. pack_category and pack_name should be created in English (follow context) if not explicitly provided in the original data.
+- Put the exact data in the exact column. MUST ALWAYS maintain the column count of every row consistently as the header. If a value is missing, leave it empty but keep the commas.
 - If a value contains a comma, wrap it in double quotes
+- ULTIMATELY MAINTAIN THE STRUCTURE FOLLOWING THE HEADER SO THE CSV COULD BE PARSED WITHOUT ISSUES. The output MUST be a valid CSV that can be parsed into the 4 columns mentioned above.
 
 Material:
 ${promptInput.trim()}`;
-    navigator.clipboard.writeText(prompt);
-    setPromptCopied(true);
-    setTimeout(() => setPromptCopied(false), 3000);
+    const finalPrompt = prompt.replace(/{learning_language}/g, learningLanguage);
+    navigator.clipboard.writeText(finalPrompt).then(() => {
+      setPromptModal(false);
+      try { window.alert(tr('llmPrompt.copiedMsg')); } catch (e) { /* ignore */ }
+    }).catch(() => {
+      // Fallback: still close modal and notify
+      setPromptModal(false);
+      try { window.alert(tr('llmPrompt.copiedMsg')); } catch (e) { /* ignore */ }
+    });
   };
 
   /* ── Floating lang select ── */
@@ -1101,10 +1101,6 @@ ${promptInput.trim()}`;
 
             {/* Actions */}
             <div className="actions-bar">
-              <input value={newPackName} onChange={e => setNewPackName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addPack()}
-                placeholder={tr('manage.newPackPlaceholder')} className="input" />
-              <button className="btn btn-primary" onClick={addPack}>{tr('manage.addPack')}</button>
               <button className="btn btn-ghost" onClick={() => { setImportModal(true); setImportMsg(""); setImportText(""); }}>{tr('manage.csvImport')}</button>
               <button className="btn btn-ghost btn-danger" onClick={deleteUserData}>{tr('manage.deleteUserData')}</button>
             </div>
@@ -1234,7 +1230,7 @@ ${promptInput.trim()}`;
           <div className="import-actions">
             <button className="btn btn-primary" onClick={doImport}>{tr('csvImport.importBtn')}</button>
             <button className="btn btn-ghost" onClick={() => setImportModal(false)}>{tr('csvImport.cancelBtn')}</button>
-            <button className="btn btn-ghost btn-llm" onClick={() => { setPromptModal(true); setPromptInput(""); setPromptCopied(false); }}>
+              <button className="btn btn-ghost btn-llm" onClick={() => { setPromptModal(true); setPromptInput(""); }}>
               {tr('csvImport.llmPrompt')}
             </button>
           </div>
@@ -1246,6 +1242,11 @@ ${promptInput.trim()}`;
       {promptModal && (
         <Modal title={tr('llmPrompt.title')} onClose={() => setPromptModal(false)}>
           <div style={{ marginBottom: 8 }}>
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ marginBottom: 6, fontWeight: 600 }}>{tr('llmPrompt.learningLanguage')}</div>
+              <input value={learningLanguage} onChange={e => setLearningLanguage(e.target.value)} className="input" />
+            </div>
+            <div style={{ marginBottom: 6, fontWeight: 600 }}>{tr('llmPrompt.learningMaterial')}</div>
             <textarea value={promptInput} onChange={e => setPromptInput(e.target.value)}
               placeholder={tr('llmPrompt.placeholder')}
               className="textarea" style={{ minHeight: 220, lineHeight: 1.6 }} />
@@ -1253,15 +1254,10 @@ ${promptInput.trim()}`;
           <div className="prompt-actions">
             <button className="btn btn-primary" style={{ opacity: promptInput.trim() ? 1 : 0.5 }}
               disabled={!promptInput.trim()} onClick={generatePrompt}>
-              {promptCopied ? tr('llmPrompt.copied') : tr('llmPrompt.generateCopy')}
+              {tr('llmPrompt.generateCopy')}
             </button>
             <button className="btn btn-ghost" onClick={() => setPromptModal(false)}>{tr('llmPrompt.close')}</button>
           </div>
-          {promptCopied && (
-            <p className="prompt-copied-msg">
-              {tr('llmPrompt.copiedMsg')}
-            </p>
-          )}
         </Modal>
       )}
 

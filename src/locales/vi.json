@@ -48,13 +48,11 @@
     "activePacks": "Bộ từ vựng đang dùng",
     "words": "Từ vựng",
     "activeWords": "Từ đang dùng",
-    "newPackPlaceholder": "Tên bộ từ vựng mới…",
-    "addPack": "+ Thêm bộ từ vựng",
-    "addPackError": "Vui lòng nhập tên bộ từ vựng!",
-    "csvImport": "📥 Nhập CSV",
+    
+    "csvImport": "📥 Thêm tài liệu học",
     "deleteUserData": "🗑 Xóa dữ liệu",
-    "deleteUserDataConfirm": "Xóa TẤT CẢ dữ liệu? Trang sẽ được tải lại.",
-    "noPacks": "Chưa có bộ từ vựng nào. Thêm ở trên hoặc dùng Nhập CSV.",
+    "deleteUserDataConfirm": "Xóa TẤT CẢ dữ liệu? Bạn sẽ mất hết từ vựng và bắt đầu lại từ đầu. Trang sẽ được tải lại.",
+    "noPacks": "Chưa có bộ từ vựng nào. Hãy thêm tài liệu học ở trên.",
     "word": "từ",
     "wordPlural": "từ",
     "packSingular": "bộ",
@@ -80,24 +78,27 @@
     "added": "✓ Đã thêm."
   },
   "csvImport": {
-    "title": "Nhập CSV",
+    "title": "Nhập tài liệu từ vựng",
     "packName": "pack_name",
     "translation": "translation",
     "importBtn": "Nhập",
     "cancelBtn": "Hủy",
-    "llmPrompt": "🤖 Tạo prompt LLM",
+    "llmPrompt": "🤖 Dùng AI trợ giúp",
     "noRows": "Không tìm thấy dòng hợp lệ nào.",
     "importResult": "✓ {{details}} — {{total}} từ.",
     "created": "{{count}} đã tạo",
     "updated": "{{count}} đã cập nhật"
   },
   "llmPrompt": {
-    "title": "🤖 Tạo prompt cho LLM",
+    "title": "🤖 Tạo prompt cho AI",
     "placeholder": "Dán tài liệu học của bạn vào đây. Nhấn Tạo & Sao chép — một prompt sẵn sàng sẽ được sao chép vào clipboard. Sau đó dán vào ChatGPT, Claude, hoặc bất kỳ LLM nào để nhận CSV bạn có thể nhập.",
     "generateCopy": "Tạo & Sao chép",
     "copied": "✓ Đã sao chép!",
     "close": "Đóng",
-    "copiedMsg": "✓ Prompt đã được sao chép! Dán vào LLM của bạn, sau đó mang CSV đầu ra về đây để nhập."
+    "copiedMsg": "✓ Prompt đã được sao chép! Dán vào AI của bạn, sau đó mang CSV đầu ra về đây để nhập."
+      ,
+      "learningLanguage": "Ngôn ngữ học",
+      "learningMaterial": "Tài liệu học"
   },
   "about": {
     "description": "HanCards là ứng dụng flashcard đơn giản, hoạt động offline để học từ vựng tiếng Hàn. Bạn có thể tự thêm bộ từ vựng mới bằng CSV theo mẫu hoặc học trên bộ có sẵn. Web được tạo bởi",

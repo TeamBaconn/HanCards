@@ -48,13 +48,11 @@
     "activePacks": "Active Packs",
     "words": "Words",
     "activeWords": "Active Words",
-    "newPackPlaceholder": "New pack name…",
-    "addPack": "+ Add Pack",
-    "addPackError": "Please enter a pack name!",
-    "csvImport": "📥 CSV Import",
+    
+    "csvImport": "📥 Import learning material",
     "deleteUserData": "🗑 Reset All Data",
-    "deleteUserDataConfirm": "Delete ALL user data? This will reset everything and reload the page.",
-    "noPacks": "No packs yet. Add one above or use CSV Import.",
+    "deleteUserDataConfirm": "Delete ALL user data? You'll lose all your vocabulary and start fresh. The page will reload.",
+    "noPacks": "No packs yet. Add some learning material above.",
     "word": "word",
     "wordPlural": "words",
     "packSingular": "pack",
@@ -87,19 +85,22 @@
     "pastePlaceholder": "",
     "importBtn": "Import",
     "cancelBtn": "Cancel",
-    "llmPrompt": "🤖 LLM Prompt",
+    "llmPrompt": "🤖 Use AI help",
     "noRows": "No valid rows found.",
     "importResult": "✓ {{details}} — {{total}} words.",
     "created": "{{count}} created",
     "updated": "{{count}} updated"
   },
   "llmPrompt": {
-    "title": "🤖 Generate LLM Prompt",
+    "title": "🤖 Generate AI Prompt",
     "placeholder": "Paste your study material below. Click Generate & Copy — a ready-to-use prompt will be copied to your clipboard. Then paste it into ChatGPT, Claude, or any LLM to get a CSV you can import.",
     "generateCopy": "Generate & Copy",
     "copied": "✓ Copied to clipboard!",
     "close": "Close",
     "copiedMsg": "✓ Prompt copied! Paste it into your LLM, then bring the CSV output back here to import."
+    ,
+    "learningLanguage": "Learning language",
+    "learningMaterial": "Learning material"
   },
   "about": { 
     "description": "HanCards is a simple flashcard app, working offline to help you learn Korean vocabulary. You can add your own new packs via CSV using the template, or study on the available packs. Web created by",
