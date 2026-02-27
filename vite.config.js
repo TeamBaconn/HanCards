@@ -3,6 +3,29 @@ import react from '@vitejs/plugin-react'
 import sitemap from 'vite-plugin-sitemap'
 import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path'
+import { readFileSync, writeFileSync } from 'fs'
+
+function robotsTxtPlugin(env) {
+  function render() {
+    const template = readFileSync(resolve(__dirname, 'public/robots.txt'), 'utf-8');
+    return Object.entries(env).reduce((txt, [k, v]) => txt.replaceAll(`%${k}%`, v), template);
+  }
+  let outDir = 'dist';
+  return {
+    name: 'robots-txt',
+    configResolved(config) { outDir = config.build.outDir; },
+    // Overwrite the raw copy Vite placed from public/ with the substituted version
+    closeBundle() {
+      writeFileSync(resolve(outDir, 'robots.txt'), render());
+    },
+    configureServer(server) {
+      server.middlewares.use('/robots.txt', (_req, res) => {
+        res.setHeader('Content-Type', 'text/plain');
+        res.end(render());
+      });
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
@@ -10,6 +33,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      robotsTxtPlugin(env),
       VitePWA({
       registerType: 'autoUpdate',
       devOptions: {

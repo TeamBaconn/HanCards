@@ -14,7 +14,6 @@ import Modal from "./components/Modal";
 import LangSelectModal from "./components/LangSelectModal";
 import VoiceSettingsModal from "./components/VoiceSettingsModal";
 import StudyScreen from "./pages/StudyScreen";
-import '@khmyznikov/pwa-install';
 
 /* ── Styles ── */
 import "./styles/app.css";
@@ -64,6 +63,7 @@ export default function App() {
   const [expandedCats, setExpandedCats] = useState({});
   const [autoSpeak, setAutoSpeak]   = useState(false);
   const [voiceModal, setVoiceModal] = useState(false);
+  const [pwaReady, setPwaReady]     = useState(false);
   const [voiceSettings, setVoiceSettings] = useState(() => {
     try { const r = localStorage.getItem(VOICE_SETTINGS_KEY); if (r) return JSON.parse(r); } catch {}
     return { langs: {} };
@@ -87,6 +87,12 @@ export default function App() {
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { screenRef.current = screen; }, [screen]);
   useEffect(() => { voiceSettingsRef.current = voiceSettings; }, [voiceSettings]);
+
+  /* ── Lazy-load PWA install component ── */
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
+    import('@khmyznikov/pwa-install').then(() => setPwaReady(true));
+  }, []);
 
   const saveVoiceSettings = useCallback((s) => {
     setVoiceSettings(s); voiceSettingsRef.current = s;
@@ -441,7 +447,7 @@ ${promptInput.trim()}`;
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
-      {!(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) && <pwa-install
+      {pwaReady && <pwa-install
         id="pwa-install"
         manifest-url="/manifest.webmanifest"
         install-description={tr('pwa.installDescription')}

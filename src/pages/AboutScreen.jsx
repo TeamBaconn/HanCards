@@ -5,7 +5,7 @@ export default function AboutScreen() {
 
   return (
     <div className="about-screen">
-      <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="App Icon" className="about-icon" />
+      <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="App Icon" className="about-icon" width="300" height="300" loading="lazy" />
       <h2 className="about-title">HanCards</h2>
       <p className="about-description">
         {tr('about.description')}

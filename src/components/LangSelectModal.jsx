@@ -4,7 +4,7 @@ export default function LangSelectModal({ onSelect }) {
   return (
     <div className="lang-overlay">
       <div className="lang-modal">
-        <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="HanCards" className="lang-modal-icon" />
+        <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="HanCards" className="lang-modal-icon" width="150" height="150" />
         <p className="lang-modal-title">한카드 HanCards</p>
         <p className="lang-modal-subtitle">Choose your language</p>
         <div className="lang-btn-group">

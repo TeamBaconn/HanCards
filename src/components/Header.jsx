@@ -8,7 +8,7 @@ export default function Header({ screen, onSetScreen, onGoToManage }) {
       <div className="header-inner">
         <div className="header-brand">
           <span onClick={() => onSetScreen("about")} style={{ cursor: "pointer" }}>
-            <img src={(import.meta.env.BASE_URL || '/') + 'icon.png'} alt="App Icon" className="header-brand-icon" />
+            <img src={(import.meta.env.BASE_URL || '/') + 'icon-28.png'} alt="App Icon" className="header-brand-icon" width="28" height="28" />
             한카드 <span className="header-brand-sub">HanCards</span>
           </span>
         </div>
