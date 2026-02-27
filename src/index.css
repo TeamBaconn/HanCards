@@ -148,7 +148,7 @@ body {
   --color-header-border: #2a2a2a;          /* was #1e1e1e */
 
   --color-text: #eaeaea;
-  --color-text-secondary: #888;
+  --color-text-secondary: #999; /* lifted from #888 for WCAG AA contrast on modal bg (#242424) */
   --color-text-muted: #666;
 
   --color-border: #2e2e2e;                  /* was #252525 */

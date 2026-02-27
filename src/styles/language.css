@@ -59,11 +59,11 @@
   padding: 0.75rem 1.6rem;
   color: var(--lang-color);
   border: 1.5px solid var(--lang-border);
-  background: color-mix(in srgb, var(--lang-color) 10%, transparent);
+  background: color-mix(in srgb, var(--lang-color) 7.5%, var(--color-modal-bg));
   box-shadow: 0 0 0 0 transparent;
 }
 
 .lang-btn:hover {
-  background: color-mix(in srgb, var(--lang-color) 25%, transparent);
+  background: color-mix(in srgb, var(--lang-color) 15%, var(--color-modal-bg));
   box-shadow: 0 2px 12px color-mix(in srgb, var(--lang-color) 20%, transparent);
 }
