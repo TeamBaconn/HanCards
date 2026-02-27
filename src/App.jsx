@@ -54,6 +54,7 @@ export default function App() {
   const [importModal, setImportModal] = useState(false);
   const [promptModal, setPromptModal] = useState(false);
   const [langModal, setLangModal]     = useState(false);
+  const [langModalClosable, setLangModalClosable] = useState(false);
   const [settingsModal, setSettingsModal] = useState(false);
 
   const [importText, setImportText]   = useState("");
@@ -155,7 +156,7 @@ export default function App() {
       const { packs: p, scores: s, isNew } = loadData();
       setPacks(p); setScores(s);
       packsRef.current = p; scoresRef.current = s;
-      if (isNew) { setLangModal(true); }
+      if (isNew) { setLangModalClosable(false); setLangModal(true); }
       else {
         const words = activeWords(p);
         if (!words.length) goToManage(p);
@@ -626,14 +627,14 @@ ${promptInput.trim()}`;
         <SettingsModal
           dark={dark}
           onToggleDark={() => setDark(d => !d)}
-          onChangeLang={() => { setSettingsModal(false); setLangModal(true); }}
+          onChangeLang={() => { setSettingsModal(false); setLangModalClosable(true); setLangModal(true); }}
           onDeleteUserData={deleteUserData}
           onClose={() => setSettingsModal(false)}
         />
       )}
 
       {/* ── Language Selection Modal ── */}
-      {langModal && <LangSelectModal onSelect={handleLangSelect} />}
+      {langModal && <LangSelectModal onSelect={handleLangSelect} onClose={langModalClosable ? () => { setLangModal(false); setSettingsModal(true); } : null} />}
 
       {/* ── Bottom Nav (portrait mode) ── */}
       <BottomNav screen={screen} onSetScreen={setScreen} onGoToManage={() => goToManage()} />
