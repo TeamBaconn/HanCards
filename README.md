@@ -4,20 +4,22 @@
 
 # HanCards
 
-**HanCards** is a web application for learning and practicing Korean vocabulary, with a focus on Hanja (Chinese characters used in Korean). It provides interactive study and quiz modes, customizable vocabulary packs, and multilingual support.
+**HanCards** is a web application for learning and practicing Korean vocabulary. It provides interactive study and quiz modes, customizable vocabulary packs, and multilingual support.
 
 ## Purpose
 
-HanCards helps learners of Korean (especially those interested in Hanja) to efficiently memorize and review vocabulary through spaced repetition, quizzes, and self-paced study. It is designed for both beginners and advanced learners, supporting multiple languages for the interface and word packs.
+HanCards helps Korean learners efficiently memorize and review vocabulary through spaced repetition, quizzes, and self-paced study. It is designed for both beginners and advanced learners, supporting multiple languages for the interface and word packs.
 
 ## Features
 
-- **Study Mode:** Flip cards to reveal translations and practice at your own pace.
+- **Study Mode:** Flip cards to reveal translations and practice at your own pace, in either direction (to or from Korean).
 - **Quiz Mode:** Multiple-choice quizzes to test your recall in both directions (Korean ↔ English/Vietnamese).
-- **Customizable Packs:** Enable or disable vocabulary packs by topic or level. Packs are loaded from CSV files for easy extension.
-- **Spaced Repetition:** Words are prioritized for review based on your performance, helping you focus on what needs practice.
-- **Progress Tracking:** Scores are saved locally in your browser.
+- **Score-Based Prioritization:** Words are weighted for review based on your performance, helping you focus on what needs practice.
+- **Text-to-Speech:** Auto-speak Korean and translation audio as you study, with customizable voice settings.
+- **Customizable Packs:** Enable or disable vocabulary packs by topic or level. Import your own CSV packs, and edit or delete existing ones.
+- **Progress Tracking:** Scores and pack data are saved locally in your browser.
 - **Multilingual UI:** Interface available in English and Vietnamese (easily extendable to other languages).
+- **PWA Support:** Installable as an app on mobile and desktop for offline use.
 - **Mobile Friendly:** Responsive design for use on phones, tablets, and desktops.
 
 ## Getting Started
@@ -53,14 +55,6 @@ Try HanCards online: [https://teambaconn.github.io/hancards](https://teambaconn.
 	```
 	The output will be in the `dist/` folder.
 
-### Build for Production
-
-```bash
-npm run build
-```
-The output will be in the `dist/` folder.
-
-## Adding New Vocabulary Packs or Languages
 
 - To add a new language, see instructions in `src/config.js`.
 - To add new vocabulary packs, place CSV files in `public/packs/` and register them in the config.

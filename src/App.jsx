@@ -151,7 +151,7 @@ export default function App() {
     const { packs: p, scores: s, isNew } = loadData();
     setPacks(p); setScores(s);
     packsRef.current = p; scoresRef.current = s;
-    if (isNew) { setLangModal(true); goToManage(p); }
+    if (isNew) { setLangModal(true); setScreen("study"); }
     else {
       const words = activeWords(p);
       if (words.length) { setScreen("study"); setCardIdx(pickCard(words, s, null)); }
