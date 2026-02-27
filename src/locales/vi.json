@@ -50,8 +50,6 @@
     "activeWords": "Từ đang dùng",
     
     "csvImport": "📥 Thêm tài liệu học",
-    "deleteUserData": "🗑 Xóa dữ liệu",
-    "deleteUserDataConfirm": "Xóa TẤT CẢ dữ liệu? Bạn sẽ mất hết từ vựng và bắt đầu lại từ đầu. Trang sẽ được tải lại.",
     "noPacks": "Chưa có bộ từ vựng nào. Hãy thêm tài liệu học ở trên.",
     "word": "từ",
     "wordPlural": "từ",
@@ -103,6 +101,15 @@
   "about": {
     "description": "HanCards là ứng dụng flashcard đơn giản, hoạt động offline để học từ vựng tiếng Hàn. Bạn có thể tự thêm bộ từ vựng mới bằng CSV theo mẫu hoặc học trên bộ có sẵn. Web được tạo bởi",
     "copyright": "© {{year}} Team Bacon. All rights reserved."
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "language": "Ngôn ngữ",
+    "theme": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "deleteUserData": "🗑 Xóa dữ liệu",
+    "deleteUserDataConfirm": "Xóa TẤT CẢ dữ liệu? Bạn sẽ mất hết từ vựng và bắt đầu lại từ đầu. Trang sẽ được tải lại."
   },
   "quiz": {
     "mixed": "Trộn",

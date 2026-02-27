@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
+import { GearIcon } from "../components/icons";
 
-export default function AboutScreen() {
+export default function AboutScreen({ onOpenSettings }) {
   const { t: tr } = useTranslation();
 
   return (
@@ -13,6 +14,12 @@ export default function AboutScreen() {
       </p>
       <div className="about-copyright">
         {tr('about.copyright', { year: new Date().getFullYear() })}
+      </div>
+
+      <div className="about-actions">
+        <button className="btn btn-primary about-gear-btn" onClick={onOpenSettings}>
+          <GearIcon /> {tr('settings.title')}
+        </button>
       </div>
     </div>
   );

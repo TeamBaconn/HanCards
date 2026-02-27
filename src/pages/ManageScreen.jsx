@@ -7,7 +7,7 @@ import ProgressChart from "../components/ProgressChart";
 export default function ManageScreen({
   packs, scores, allWords, enabledCount, expandedCats,
   onTogglePack, onToggleCategory, onDeleteCategory, onDeletePack,
-  onDeleteUserData, onSetExpandedCats, onEditPack, onOpenImport,
+  onSetExpandedCats, onEditPack, onOpenImport,
 }) {
   const { t: tr } = useTranslation();
 
@@ -43,7 +43,6 @@ export default function ManageScreen({
       {/* Actions */}
       <div className="actions-bar">
         <button className="btn btn-ghost" onClick={onOpenImport}>{tr('manage.csvImport')}</button>
-        <button className="btn btn-ghost btn-danger" onClick={onDeleteUserData}>{tr('manage.deleteUserData')}</button>
       </div>
 
       {/* Pack grid */}

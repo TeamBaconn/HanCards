@@ -57,7 +57,7 @@
   }
 
   .app {
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px));
   }
 
   .fab {

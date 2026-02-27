@@ -13,13 +13,13 @@ import BottomNav from "./components/BottomNav";
 import Modal from "./components/Modal";
 import LangSelectModal from "./components/LangSelectModal";
 import VoiceSettingsModal from "./components/VoiceSettingsModal";
+import SettingsModal from "./components/SettingsModal";
 import StudyScreen from "./pages/StudyScreen";
 
 /* ── Styles ── */
 import "./styles/app.css";
 import "./styles/shared.css";
 import "./styles/header.css";
-import "./styles/bottom-nav.css";
 import "./styles/flipcard.css";
 import "./styles/study.css";
 import "./styles/manage.css";
@@ -27,7 +27,8 @@ import "./styles/quiz.css";
 import "./styles/about.css";
 import "./styles/modal.css";
 import "./styles/language.css";
-import "./styles/fab.css";
+import "./styles/settings.css";
+import "./styles/bottom-nav.css";
 
 /* ── Lazy-loaded pages ── */
 const ManageScreen = lazy(() => import("./pages/ManageScreen"));
@@ -53,6 +54,7 @@ export default function App() {
   const [importModal, setImportModal] = useState(false);
   const [promptModal, setPromptModal] = useState(false);
   const [langModal, setLangModal]     = useState(false);
+  const [settingsModal, setSettingsModal] = useState(false);
 
   const [importText, setImportText]   = useState("");
   const [importMsg, setImportMsg]     = useState("");
@@ -327,7 +329,7 @@ export default function App() {
   };
 
   const deleteUserData = () => {
-    if (!confirm(tr('manage.deleteUserDataConfirm'))) return;
+    if (!confirm(tr('settings.deleteUserDataConfirm'))) return;
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(LANG_KEY);
     window.location.reload();
@@ -420,10 +422,6 @@ ${promptInput.trim()}`;
     });
   };
 
-  /* ── Floating lang select ── */
-  const openLangModal = () => setLangModal(true);
-  const curLang = LANG_MAP[i18n.language];
-
   /* ── Derived values ── */
   const allWords = useMemo(() => activeWords(packs), [packs, activeWords]);
   const card = allWords[cardIdx];
@@ -478,7 +476,11 @@ ${promptInput.trim()}`;
         <Suspense fallback={pageFallback}>
 
           {/* ── ABOUT ── */}
-          {screen === "about" && <AboutScreen />}
+          {screen === "about" && (
+            <AboutScreen
+              onOpenSettings={() => setSettingsModal(true)}
+            />
+          )}
 
           {/* ── QUIZ ── */}
           {screen === "quiz" && (
@@ -502,7 +504,6 @@ ${promptInput.trim()}`;
               enabledCount={enabledCount} expandedCats={expandedCats}
               onTogglePack={togglePack} onToggleCategory={toggleCategory}
               onDeleteCategory={deleteCategory} onDeletePack={deletePack}
-              onDeleteUserData={deleteUserData}
               onSetExpandedCats={setExpandedCats}
               onEditPack={handleEditPack}
               onOpenImport={() => { setImportModal(true); setImportMsg(""); setImportText(""); }}
@@ -620,21 +621,22 @@ ${promptInput.trim()}`;
         />
       )}
 
+      {/* ── Settings Modal ── */}
+      {settingsModal && (
+        <SettingsModal
+          dark={dark}
+          onToggleDark={() => setDark(d => !d)}
+          onChangeLang={() => { setSettingsModal(false); setLangModal(true); }}
+          onDeleteUserData={deleteUserData}
+          onClose={() => setSettingsModal(false)}
+        />
+      )}
+
       {/* ── Language Selection Modal ── */}
       {langModal && <LangSelectModal onSelect={handleLangSelect} />}
 
       {/* ── Bottom Nav (portrait mode) ── */}
       <BottomNav screen={screen} onSetScreen={setScreen} onGoToManage={() => goToManage()} />
-
-      {/* ── Floating language switcher ── */}
-      <button onClick={openLangModal} className="fab fab-lang">
-        {curLang ? curLang.flag : "🌐"}
-      </button>
-
-      {/* ── Floating dark mode ── */}
-      <button onClick={() => setDark(d => !d)} className="fab fab-theme">
-        {dark ? "☀️" : "🌙"}
-      </button>
     </div>
   );
 }

@@ -37,3 +37,23 @@
   color: var(--color-text-muted);
   margin-top: 30px;
 }
+
+/* ── About Actions ── */
+.about-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.about-gear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--text-base);
+  padding: 0.6rem 1.3rem;
+}
+
+.about-gear-btn:hover {
+  opacity: 0.85;
+}

@@ -50,8 +50,6 @@
     "activeWords": "Active Words",
     
     "csvImport": "📥 Import learning material",
-    "deleteUserData": "🗑 Reset All Data",
-    "deleteUserDataConfirm": "Delete ALL user data? You'll lose all your vocabulary and start fresh. The page will reload.",
     "noPacks": "No packs yet. Add some learning material above.",
     "word": "word",
     "wordPlural": "words",
@@ -105,6 +103,15 @@
   "about": { 
     "description": "HanCards is a simple flashcard app, working offline to help you learn Korean vocabulary. You can add your own new packs via CSV using the template, or study on the available packs. Web created by",
     "copyright": "© {{year}} Team Bacon. All rights reserved."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "deleteUserData": "🗑 Reset All Data",
+    "deleteUserDataConfirm": "Delete ALL user data? You'll lose all your vocabulary and start fresh. The page will reload."
   },
   "quiz": {
     "mixed": "Mixed",

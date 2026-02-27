@@ -72,7 +72,7 @@ export const LANGUAGES = [
     code: "vi",
     label: "Tiếng Việt",
     flag: "🇻🇳",
-    color: "#da251d",
+    color: "#ff160a",
     borderColor: "#b01e18",
     packs: ["sc1-vn.csv", "sc2-vn.csv", "tc3-vn.csv", "tc4-vn.csv"],
     /** BCP-47 tag used for text-to-speech on the translation side */
