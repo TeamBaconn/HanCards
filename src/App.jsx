@@ -41,7 +41,8 @@ const QuizScreen = lazy(() => import("./pages/QuizScreen"));
 export default function App() {
   const { t: tr, i18n } = useTranslation();
 
-  const [screen, setScreen]           = useState("loading");
+  const [isLoading, setIsLoading]     = useState(true);
+  const [screen, setScreen]           = useState("study");
   const [packs, setPacks]             = useState([]);
   const [scores, setScores]           = useState({});
   const [mode, setMode]               = useState("eng");
@@ -146,17 +147,21 @@ export default function App() {
 
   const persist = useCallback((ps, s) => { saveData({ packs: ps, scores: s }); }, []);
 
-  /* ── Initial load ── */
+  /* ── Initial load (async: yields to browser so loading screen paints first) ── */
   useEffect(() => {
-    const { packs: p, scores: s, isNew } = loadData();
-    setPacks(p); setScores(s);
-    packsRef.current = p; scoresRef.current = s;
-    if (isNew) { setLangModal(true); setScreen("study"); }
-    else {
-      const words = activeWords(p);
-      if (words.length) { setScreen("study"); setCardIdx(pickCard(words, s, null)); }
-      else goToManage(p);
-    }
+    const timer = setTimeout(() => {
+      const { packs: p, scores: s, isNew } = loadData();
+      setPacks(p); setScores(s);
+      packsRef.current = p; scoresRef.current = s;
+      if (isNew) { setLangModal(true); }
+      else {
+        const words = activeWords(p);
+        if (!words.length) goToManage(p);
+        else setCardIdx(pickCard(words, s, null));
+      }
+      setIsLoading(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Language selection ── */
@@ -434,19 +439,17 @@ ${promptInput.trim()}`;
   const koSide        = { label: "한국어", ttsLang: KOREAN_TTS_LANG, sample: KOREAN_TTS_SAMPLE };
   const voiceLangPairs = mode === "eng" ? [transSide, koSide] : [koSide, transSide];
 
-  /* ── Loading screen ── */
-  if (screen === "loading") return (
-    <div className="app loading-screen" data-theme={dark ? "dark" : "light"}>
-      <p className="text-secondary">{tr('loading')}</p>
-    </div>
-  );
-
   /* ── Suspense fallback ── */
   const pageFallback = <div className="loading-screen"><p className="text-secondary">{tr('loading')}</p></div>;
 
   /* ════════════════════════  RENDER  ════════════════════════ */
   return (
     <div className="app" data-theme={dark ? "dark" : "light"}>
+      {isLoading && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "all", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)" }}>
+          <p className="text-secondary">{tr('loading')}</p>
+        </div>
+      )}
       {pwaReady && <pwa-install
         id="pwa-install"
         manifest-url="/manifest.webmanifest"
