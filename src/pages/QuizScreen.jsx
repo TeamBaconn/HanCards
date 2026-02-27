@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { SCORE, scoreColor, CARD_FONT_STEPS, QUIZ_DELAY } from "./config";
+import { SCORE, scoreColor, QUIZ_DELAY } from "../config";
+import { getCardFontSize } from "../utils/cards";
 
 /* ── Answer generation helpers ── */
 
@@ -12,7 +13,6 @@ function pickDistractors(correctWord, allWords, field, count = 3) {
   );
   if (candidates.length === 0) return [];
 
-  // Weight by similarity in character length
   const weighted = candidates.map((w) => {
     const len = w[field].length;
     const diff = Math.abs(len - correctLen);
@@ -53,21 +53,11 @@ function shuffleArray(arr) {
   return a;
 }
 
-
-/* ── Font sizing — same as FlipCard ── */
-function getCardFontSize(text) {
-  const len = (text || "").length;
-  for (const step of CARD_FONT_STEPS) {
-    if (len <= step.maxLen) return step.size;
-  }
-  return CARD_FONT_STEPS[CARD_FONT_STEPS.length - 1].size;
-}
-
 /* ════════════════════════════════════════════════════════════
    Quiz Component
    ════════════════════════════════════════════════════════════ */
 
-export default function Quiz({ allWords, scores, enabledCount, onGoToManage, onScoreUpdate }) {
+export default function QuizScreen({ allWords, scores, enabledCount, onGoToManage, onScoreUpdate }) {
   const { t: tr } = useTranslation();
 
   const [quizMode, setQuizMode] = useState("mixed");
@@ -191,7 +181,6 @@ export default function Quiz({ allWords, scores, enabledCount, onGoToManage, onS
 
   /* Handle answer selection */
   const handleAnswer = (idx) => {
-    // If already answered, fast-forward to next question
     if (answered) {
       clearTimeout(advanceTimerRef.current);
       generateQuestion();
@@ -216,7 +205,6 @@ export default function Quiz({ allWords, scores, enabledCount, onGoToManage, onS
 
     onScoreUpdate(key, newScore);
 
-    // Auto-advance after delay
     const delay = isCorrect ? QUIZ_DELAY.correct : QUIZ_DELAY.wrong;
     advanceTimerRef.current = setTimeout(() => {
       generateQuestion();
@@ -277,19 +265,14 @@ export default function Quiz({ allWords, scores, enabledCount, onGoToManage, onS
         <div ref={promptTextRef} className="quiz-prompt-text" style={{ fontSize: promptFontSize }}>{promptText}</div>
       </div>
 
-
       {/* Answer options */}
       <div className="quiz-options">
         {options.map((opt, idx) => {
-          // Find the full word object for translation
           let translation = null;
           if (answered) {
-            // Only show translation for correct or selected (if wrong)
             if (idx === correctIdx || (idx === selectedIdx && idx !== correctIdx)) {
-              // Find the word in allWords by korean key
               const wordObj = allWords.find(w => w.korean === opt.korean);
               if (wordObj) {
-                // If the answer is in Korean, show English as translation; if answer is in English, show Korean
                 if (opt.text === wordObj.korean) {
                   translation = wordObj.english;
                 } else if (opt.text === wordObj.english) {

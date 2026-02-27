@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hancards.bacongamedev.com/sitemap.xml
